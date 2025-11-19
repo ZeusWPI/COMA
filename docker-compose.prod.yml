@@ -15,7 +15,7 @@ services:
     restart: unless-stopped
     env_file: .docker-env-prod
     volumes:
-      - prod-db-data:/var/lib/postgresql/data
+      - prod-db-data:/var/lib/postgresql
 
 volumes:
   prod-db-data:
