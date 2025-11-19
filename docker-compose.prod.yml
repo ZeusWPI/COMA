@@ -1,0 +1,21 @@
+services:
+  prod-backend:
+    build:
+      context: .
+      target: prod
+    restart: unless-stopped
+    env_file: .docker-env-prod
+    ports:
+      - 127.0.0.1:$PORT_FOR_PROXY:80
+    depends_on:
+      - prod-db
+
+  prod-db:
+    image: docker.io/library/postgres:18
+    restart: unless-stopped
+    env_file: .docker-env-prod
+    volumes:
+      - prod-db-data:/var/lib/postgresql/data
+
+volumes:
+  prod-db-data:
