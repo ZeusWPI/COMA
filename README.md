@@ -49,3 +49,17 @@ To see and interact with the available endpoints, see `http://localhost:8000/doc
 ```console
 ./scripts/format.sh
 ```
+
+### Migrations
+
+After changing a model (for example, adding a column), create a revision:
+
+```console
+alembic revision --autogenerate -m "Add column ..."
+```
+
+After creating the revision, run the migration in the database (this is what will actually change the database):
+
+```console
+alembic upgrade head
+```
