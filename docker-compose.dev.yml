@@ -1,0 +1,25 @@
+services:
+  dev-backend:
+    build:
+      context: .
+      target: dev
+    env_file: .docker-env-dev
+    ports:
+      - 127.0.0.1:8000:80
+    volumes:
+      - ./alembic/:/app/alembic/
+      - ./app/:/app/app/
+      - ./scripts/:/app/scripts/
+    depends_on:
+      - dev-db
+
+  dev-db:
+    image: docker.io/library/postgres:18
+    env_file: .docker-env-dev
+    ports:
+      - 127.0.0.1:5432:5432
+    volumes:
+      - dev-db-data:/var/lib/postgresql/data
+
+volumes:
+  dev-db-data:
