@@ -1,0 +1,42 @@
+FROM ghcr.io/astral-sh/uv:0.9.10-python3.13-trixie-slim AS base
+
+
+FROM base AS common
+
+RUN export DEBIAN_FRONTEND=noninteractive && \
+    apt-get update && \
+    apt-get install -y \
+        build-essential libpq-dev
+
+ENV UV_COMPILE_BYTECODE=1
+ENV UV_LINK_MODE=copy
+ENV UV_TOOL_BIN_DIR=/usr/local/bin
+
+WORKDIR /app
+
+# Install dependencies
+COPY ./pyproject.toml ./uv.lock ./
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --locked --no-install-project --no-dev
+
+# Activate the venv
+ENV PATH="/app/.venv/bin:$PATH"
+
+
+FROM common AS dev
+
+# Also install dev dependencies
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --locked
+
+CMD ["fastapi", "dev", "--host=0.0.0.0", "--port=80", "--reload", "app/main.py"]
+
+
+FROM common AS prod
+
+# Build and install our project
+COPY ./ ./
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --locked --no-dev
+
+CMD ["fastapi", "run", "--host=0.0.0.0", "--port=80", "app/main.py"]
