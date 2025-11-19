@@ -8,6 +8,7 @@ services:
       - 127.0.0.1:8000:80
     volumes:
       - ./alembic/:/app/alembic/
+      - ./alembic.ini:/app/alembic.ini
       - ./app/:/app/app/
       - ./scripts/:/app/scripts/
     depends_on:
