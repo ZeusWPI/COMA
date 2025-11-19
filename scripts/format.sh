@@ -1,5 +1,5 @@
 #!/usr/bin/bash
 set -e
 
-ruff check . --fix
-ruff format .
+ruff check app --fix
+ruff format app

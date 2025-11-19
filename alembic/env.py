@@ -3,8 +3,10 @@ from logging.config import fileConfig
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 
-from app.api import main  # noqa
+from sqlmodel import SQLModel  # NEW
+from app.api import models # noqa
 from app.core.config import settings  # noqa
+import sqlmodel
 
 from alembic import context
 
@@ -26,7 +28,7 @@ def get_url():
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-target_metadata = None
+target_metadata = SQLModel.metadata
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:

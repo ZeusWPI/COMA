@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.routing import APIRoute
 
-from app.api.main import api_router
+from app.api.routes import router
 from app.core.config import settings
 
 
@@ -14,4 +14,4 @@ app = FastAPI(
     generate_unique_id_function=custom_generate_unique_id,
 )
 
-app.include_router(api_router)
+app.include_router(router)
