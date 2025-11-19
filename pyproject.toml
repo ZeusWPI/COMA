@@ -1,0 +1,11 @@
+[project]
+name = "coma"
+version = "0.1.0"
+description = "computational mathematics"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi[standard]>=0.121.3",
+    "pydantic-settings>=2.12.0",
+    "ruff>=0.14.5",
+]
