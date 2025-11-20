@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from fastapi import APIRouter, status, Request, Form, HTTPException
 from sqlmodel import select
-from app.api.models import TeamCreate, Team
+from app.api.models import Question, Submission, TeamCreate, Team
 from app.api.utils import generate_password
 from app.api.deps import AdminDep, SessionDep
 from sqlalchemy.exc import IntegrityError
@@ -84,3 +84,30 @@ async def login(
     response = RedirectResponse("/")
     response.set_cookie(key="auth_jwt", value=team_jwt)
     return response
+
+
+@router.get("/leaderboard", tags=["leaderboard"], response_class=HTMLResponse)
+async def leaderboard_page(session: SessionDep, request: Request):
+    """
+    Render the leaderboard page
+    """
+    template_teams = []
+    teams = session.exec(select(Team)).all()
+    for i in teams:
+        score = 0
+        questions = session.exec(select(Question)).all()
+        for j in questions:
+            submissions = session.exec(
+                select(Submission).where(
+                    Submission.team_id == i.id, Submission.question_id == j.id
+                )
+            ).all()
+            # TODO: Add penalty for wrong answers and only consider last answer
+            for k in submissions:
+                if k.answer == j.solution:
+                    score += j.max_score
+                    break
+        template_teams.append({"name": i.name, "score": score})
+    return templates.TemplateResponse(
+        request=request, name="leaderboard.html", context={"teams": template_teams}
+    )

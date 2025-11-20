@@ -45,7 +45,7 @@ class QuestionBase(SQLModel):
 # Database model
 class Question(QuestionBase, table=True):
     id: int = Field(default=None, primary_key=True)
-    solution: float
+    solution: str
 
 
 # Shared properties
