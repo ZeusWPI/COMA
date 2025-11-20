@@ -1,7 +1,9 @@
 from typing import Annotated
+
+import jwt
 from fastapi import Cookie, Depends, HTTPException, status
 from sqlmodel import Session, select
-import jwt
+
 from app.api.exception import RequiresLoginException
 from app.api.models import Team
 from app.core.config import settings

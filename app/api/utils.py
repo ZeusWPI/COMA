@@ -1,9 +1,10 @@
 import random
+import re
 import secrets
 import textwrap
-from PIL import Image
-import re
+
 from fastapi import HTTPException, status
+from PIL import Image
 
 
 def generate_password() -> str:
