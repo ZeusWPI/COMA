@@ -1,6 +1,6 @@
-<html>
-  <body>
-    <p>Team name: {{team.name}}</p>
-    <p>Team password: {{password}}</p>
-  </body>
-</html>
+{% extends "base.html" %}
+{% block title %}Team{% endblock %}
+{% block content %}
+  <p>Team name: {{team.name}}</p>
+  <p>Team password: {{password}}</p>
+{% endblock %}
