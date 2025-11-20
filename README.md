@@ -40,7 +40,7 @@ This will start a local development server on port `8000`.
 
 #### Database
 
-For a development database, either install Postgres, or use `docker compose -f docker-compose.dev.yml up -d db` as mentioned below.
+For a development database, either install Postgres, or use `docker compose -f docker-compose.dev.yml up -d dev-db` as mentioned below.
 
 ### Using docker
 

@@ -1,11 +1,15 @@
+from datetime import datetime, timezone
 from fastapi import APIRouter, status, Request
-from app.api.models import TeamCreate, Team
-from app.api.utils import generate_password, get_password_hash
+from sqlmodel import select
+from app.api.models import LoginJWT, LoginRequest, TeamCreate, Team
+from app.api.utils import generate_password
 from app.api.deps import SessionDep
 from fastapi import HTTPException
 from sqlalchemy.exc import IntegrityError
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse, RedirectResponse
+import jwt
+from app.core.config import settings
 
 router = APIRouter()
 
@@ -20,7 +24,7 @@ async def create_team(session: SessionDep, team_in: TeamCreate):
     password = generate_password()
     team = Team.model_validate(
         team_in,
-        update={"hashed_password": get_password_hash(password)},
+        update={"password": password},
     )
 
     try:
@@ -41,6 +45,16 @@ async def show_team(request: Request, session: SessionDep, id: int):
     Return detail page of team, only admins have access
     """
     team = session.get(Team, id)
-    return templates.TemplateResponse(
-        request=request, name="team_show.html", context={"team": team}
-    )
+    return templates.TemplateResponse(request=request, name="team_show.html", context={"team": team})
+
+
+@router.post("/login", response_model=LoginJWT, tags=["auth"])
+async def login(session: SessionDep, request: LoginRequest):
+    """
+    Log in and create a JWT
+    """
+    team = session.exec(select(Team).where(Team.name == request.team_name, Team.password == request.password)).first()
+    if team is None:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid credentials")
+    team_jwt = jwt.encode(payload={"id": team.id, "exp": datetime.now(tz=timezone.utc)}, key=settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
+    return LoginJWT(jwt=team_jwt)
