@@ -1,18 +1,18 @@
 import base64
 from datetime import datetime, timezone
 import io
-import textwrap
 from fastapi import APIRouter, status, Request, Form, HTTPException
 from sqlmodel import select
 from app.api.models import Question, Submission, TeamCreate, Team
-from app.api.utils import generate_logo, generate_password
+from app.api.utils import generate_logo, generate_password, is_answer_correct
 from app.api.deps import AdminDep, SessionDep
 from sqlalchemy.exc import IntegrityError
 from fastapi.templating import Jinja2Templates
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, PlainTextResponse, RedirectResponse
 import jwt
 from app.core.config import settings
 from typing import Annotated
+import csv
 
 router = APIRouter()
 
@@ -44,7 +44,7 @@ async def create_team(session: SessionDep, team_in: TeamCreate, auth: AdminDep):
 
 
 @router.get("/admin/team/{id}", response_class=HTMLResponse, tags=["admin"])
-async def show_team(request: Request, session: SessionDep, id: int):
+async def show_team(request: Request, session: SessionDep, id: int, auth: AdminDep):
     """
     Return detail page of team, only admins have access
     """
@@ -110,17 +110,7 @@ async def leaderboard_page(session: SessionDep, request: Request):
             ).all()
             # TODO: Add penalty for wrong answers and only consider last answer
             for k in submissions:
-                correct = False
-                if "." not in k.answer and k.answer == j.solution:
-                    correct = True
-                if k.answer.count(".") == 1 and j.solution.count(".") == 1:
-                    split_1 = k.answer.split(".")
-                    split_2 = j.solution.split(".")
-                    after_decimal_1 = textwrap.wrap(split_1[1], 10)[0]
-                    after_decimal_2 = textwrap.wrap(split_2[1], 10)[0]
-                    if split_1[0] == split_2[0] and after_decimal_1 == after_decimal_2:
-                        correct = True
-                if correct:
+                if is_answer_correct(k.answer, j.solution):
                     score += j.max_score
                     break
         quality = 1
@@ -135,3 +125,32 @@ async def leaderboard_page(session: SessionDep, request: Request):
     return templates.TemplateResponse(
         request=request, name="leaderboard.html", context={"teams": template_teams}
     )
+
+
+@router.get("/admin/answers.csv", tags=["admin"])
+async def answers_csv(request: Request, session: SessionDep, auth: AdminDep):
+    """
+    Return a CSV with all answers
+    """
+    submissions = session.exec(select(Submission)).all()
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(["Timestamp", "Team Name", "Question Number", "Answer", "Correct"])
+    for i in submissions:
+        team = session.get(Team, i.team_id)
+        assert team is not None
+        team_name = team.name
+        question = session.get(Question, i.question_id)
+        assert question is not None
+        question_no = question.number
+        writer.writerow(
+            [
+                i.timestamp.strftime("%x %X"),
+                team_name,
+                question_no,
+                i.answer,
+                is_answer_correct(question.solution, i.answer),
+            ]
+        )
+
+    return PlainTextResponse(output.getvalue())
