@@ -1,0 +1,30 @@
+<nav>
+  <ul>
+    <li>
+      <a href="/" class="brand">
+        <img src="/static/images/prime.webp" alt="Prime logo" />
+        <strong>COMA</strong>
+      </a>
+    </li>
+  </ul>
+  <ul>
+    <li><a href="/">Questions</a></li>
+    <li><a href="/leaderboard">Leaderboard</a></li>
+    {% if team %}
+      <li>
+        <details class="dropdown">
+          <summary>{{team.name}}</summary>
+          <ul role="list">
+            {% if team.admin %}
+              <li><a href="/admin/team">Teams</a></li>
+              <li><a href="/admin">Admin</a></li>
+            {% endif %}
+            <li><a href="/logout">Logout</a></li>
+          </ul>
+        </details>
+      </li>
+    {% else %}
+      <li><a href="/login">Login</a></li>
+    {% endif %}
+  </ul>
+</nav>

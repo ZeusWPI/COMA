@@ -1,0 +1,19 @@
+nav {
+  padding: 0 1rem;
+  margin-bottom: 2rem;
+  background-color: #3D365C;
+  box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.2);
+  position: sticky;
+  top: 0;
+}
+
+nav a.brand {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+nav a.brand img {
+  max-height: 48px;
+  width: auto;
+}
