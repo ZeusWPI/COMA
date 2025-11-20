@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
-from fastapi import APIRouter, status, Request
+from fastapi import APIRouter, Response, status, Request
 from sqlmodel import select
-from app.api.models import LoginJWT, LoginRequest, TeamCreate, Team
+from app.api.models import LoginRequest, TeamCreate, Team
 from app.api.utils import generate_password
 from app.api.deps import SessionDep
 from fastapi import HTTPException
@@ -48,7 +48,7 @@ async def show_team(request: Request, session: SessionDep, id: int):
     return templates.TemplateResponse(request=request, name="team_show.html", context={"team": team})
 
 
-@router.post("/login", response_model=LoginJWT, tags=["auth"])
+@router.post("/login", tags=["auth"])
 async def login(session: SessionDep, request: LoginRequest):
     """
     Log in and create a JWT
@@ -57,4 +57,6 @@ async def login(session: SessionDep, request: LoginRequest):
     if team is None:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid credentials")
     team_jwt = jwt.encode(payload={"id": team.id, "exp": datetime.now(tz=timezone.utc)}, key=settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
-    return LoginJWT(jwt=team_jwt)
+    response = Response()
+    response.set_cookie(key="jwt", value=team_jwt)
+    return response

@@ -32,8 +32,3 @@ class TeamCreated(TeamPublic):
 class LoginRequest(BaseModel):
     team_name: str
     password: str
-
-
-# Properties to return after logging in
-class LoginJWT(BaseModel):
-    jwt: str
