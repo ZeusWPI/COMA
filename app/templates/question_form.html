@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block title %}Question Create{% endblock %}
+{% block content %}
+  <form method="POST" action="/admin/question" >
+    <fieldset>
+	<label>
+	  Title
+	  <input
+	    name="title"
+	    placeholder="Title"
+	    required
+	    {% if question %}
+	      value="{{question.title}}"
+	    {% endif %}
+	  />
+	</label>
+
+	<label>
+	  Text
+	  <textarea
+	    name="body"
+	    placeholder="Write the question here...."
+	    required
+	    {% if question %}
+	      value="{{question.body}}"
+	    {% endif %}
+	  />
+	  </textarea>
+	</label>
+
+	<label>
+	  Vraag Number
+	  <input 
+	    type="number" 
+	    name="number" 
+	    placeholder="Number" 
+	    aria-label="Number" 
+	    required
+	    {% if question %}
+	      value="{{question.number}}"
+	    {% endif %}
+	  />
+	</label>
+
+	<label>
+	  Max Score Display
+	  <input 
+	    type="text" 
+	    name="max_score_display" 
+	    placeholder="\sqrt{2}" 
+	    aria-describedby="max-score-helper" 
+	    required 
+	    {% if question %}
+	      value="{{question.max_score_display}}"
+	    {% endif %}
+	   />
+	  <small id="max-score-helper">
+	    This input will be displayed next to the question, but will not be calculated with. 
+	    For all score calculations the max score below is used, so this input should match the real max score (below) as much as possible.
+	  </small>
+	</label>
+
+	<label>
+	  Max Score
+	  <input 
+	    type="text" 
+	    name="max_score" 
+	    placeholder="Max score" 
+	    required
+	    {% if question %}
+	      value="{{question.max_score}}"
+	    {% endif %}
+	  />
+	</label>
+
+	<label>
+	  Solution
+	  <input 
+	    type="text" 
+	    name="solution" 
+	    placeholder="solution..." 
+	    required
+	    {% if question %}
+	      value="{{question.solution}}"
+	    {% endif %}
+	  />
+	</label>
+
+	<label>
+	  Visible
+	  <input
+	    name="visible"
+	    role="switch"
+	    type="checkbox"
+	    {% if question and question.visible %}
+	      {% if question.visible %}
+	    	checked
+	      {% endif %}
+	    {% else %}
+	     	checked
+	    {% endif %}
+	  />
+	</label>
+
+    </fieldset>
+
+    <input
+      type="submit"
+      value="Create"
+    />
+  </form>
+{% endblock %}

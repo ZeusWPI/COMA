@@ -42,12 +42,6 @@ class QuestionBase(SQLModel):
     visible: bool = Field(default=True)
 
 
-# Database model
-class Question(QuestionBase, table=True):
-    id: int = Field(default=None, primary_key=True)
-    solution: str
-
-
 # Shared properties
 class SubmissionBase(SQLModel):
     answer: str
@@ -64,3 +58,18 @@ class Submission(SubmissionBase, table=True):
     team_id: int = Field(foreign_key="team.id")
     question_id: int = Field(foreign_key="question.id")
     timestamp: datetime
+
+
+# Database model
+class Question(QuestionBase, table=True):
+    id: int = Field(default=None, primary_key=True)
+    solution: str
+
+
+class QuestionCreate(QuestionBase):
+    solution: str
+    pass
+
+
+class QuestionPublic(QuestionBase):
+    pass

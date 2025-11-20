@@ -2,6 +2,8 @@ import random
 import secrets
 import textwrap
 from PIL import Image
+import re
+from fastapi import HTTPException, status
 
 
 def generate_password() -> str:
@@ -32,3 +34,15 @@ def is_answer_correct(a: str, b: str) -> bool:
         if split_a[0] == split_b[0] and after_decimal_a == after_decimal_b:
             return True
     return False
+
+
+def validate_question_answer(input: str) -> str:
+    """Strips all whitespaces, replace , to . and validates if input is a correct number format"""
+    transformed = input.strip().replace(",", ".")
+    if not bool(re.fullmatch(r"[0-9.]+", transformed)) or transformed.count(".") > 1:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Given Solution does not have correct format",
+        )
+
+    return transformed

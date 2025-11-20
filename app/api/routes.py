@@ -6,6 +6,8 @@ from sqlmodel import select
 from app.api.models import Question, Submission, TeamCreate, Team
 from app.api.utils import generate_logo, generate_password, is_answer_correct
 from app.api.deps import AdminDep, AuthDep, AuthOptionalDep, SessionDep
+from app.api.models import QuestionCreate
+from app.api.utils import validate_question_answer
 from sqlalchemy.exc import IntegrityError
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse, PlainTextResponse, RedirectResponse
@@ -59,6 +61,64 @@ async def show_team(request: Request, session: SessionDep, id: int, auth: AdminD
     return templates.TemplateResponse(
         request=request, name="team_show.html", context={"team": team}
     )
+
+
+@router.get("/admin/question", response_class=HTMLResponse, tags=["admin", "questions"])
+async def new_question(request: Request, auth: AdminDep):
+    """
+    Render the question creation page
+    """
+    return templates.TemplateResponse(request=request, name="question_form.html")
+
+
+@router.get(
+    "/admin/question/{id}", response_class=HTMLResponse, tags=["admin", "questions"]
+)
+async def update_question(
+    session: SessionDep, request: Request, auth: AdminDep, id: int
+):
+    """
+    Render the question form page for updating
+    """
+    question = session.get(Question, id)
+
+    if question is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="question not found"
+        )
+
+    question_public = question.model_validate(question)
+
+    return templates.TemplateResponse(
+        request=request,
+        name="question_form.html",
+        context={"question": question_public},
+    )
+
+
+@router.post(
+    "/admin/question", response_class=RedirectResponse, tags=["admin", "questions"]
+)
+async def create_question(
+    session: SessionDep, auth: AdminDep, question_in: Annotated[QuestionCreate, Form()]
+):
+    """
+    create the new question and redirect to admin home page
+    """
+    question = Question.model_validate(
+        question_in, update={"solution": validate_question_answer(question_in.solution)}
+    )
+
+    try:
+        session.add(question)
+        session.commit()
+    except IntegrityError:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="question number already exists",
+        )
+
+    return RedirectResponse("/admin")
 
 
 @router.get("/login", tags=["auth"], response_class=HTMLResponse)
