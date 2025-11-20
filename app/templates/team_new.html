@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Team Create{% endblock %}
+{% block content %}
+<form method="POST" action="/admin/team">
+  <fieldset>
+    <label>
+      Team Name
+      <input
+        name="name"
+        placeholder="team name..."
+        required
+      />
+    </label>
+
+    <input
+      type="submit"
+      value="Create"
+    />
+  </fieldset>
+</form>
+{% endblock %}

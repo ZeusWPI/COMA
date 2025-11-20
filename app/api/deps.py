@@ -49,5 +49,7 @@ async def authenticate_admin(team: AuthDep):
             detail="You need to be admin to do this",
         )
 
+    return team
 
-AdminDep = Annotated[None, Depends(authenticate_admin)]
+
+AdminDep = Annotated[Team, Depends(authenticate_admin)]

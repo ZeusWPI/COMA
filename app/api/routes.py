@@ -81,8 +81,20 @@ async def home_page(request: Request, session: SessionDep, auth: AuthDep):
     )
 
 
-@router.post("/team", response_class=RedirectResponse, tags=["team"])
-async def create_team(session: SessionDep, team_in: TeamCreate, auth: AdminDep):
+@router.get("/admin/team", response_class=HTMLResponse, tags=["admin", "team"])
+async def new_team(request: Request, auth: AdminDep):
+    """
+    Return page for new team creation
+    """
+    return templates.TemplateResponse(
+        request=request, name="team_new.html", context={"team": auth}
+    )
+
+
+@router.post("/admin/team", response_class=RedirectResponse, tags=["admin", "team"])
+async def create_team(
+    session: SessionDep, team_in: Annotated[TeamCreate, Form()], auth: AdminDep
+):
     """
     Create a new team and returns generated password
     """
@@ -101,7 +113,7 @@ async def create_team(session: SessionDep, team_in: TeamCreate, auth: AdminDep):
             detail="Name already taken",
         )
 
-    return RedirectResponse(f"/admin/team/{team.id}")
+    return RedirectResponse(f"/admin/team/{team.id}", status_code=302)
 
 
 @router.get("/admin/team/{id}", response_class=HTMLResponse, tags=["admin"])
@@ -110,8 +122,13 @@ async def show_team(request: Request, session: SessionDep, id: int, auth: AdminD
     Return detail page of team, only admins have access
     """
     team = session.get(Team, id)
+    if team is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="question not found"
+        )
+
     return templates.TemplateResponse(
-        request=request, name="team_show.html", context={"team": team}
+        request=request, name="team_show.html", context={"created": team, "team": auth}
     )
 
 
@@ -120,7 +137,9 @@ async def new_question(request: Request, auth: AdminDep):
     """
     Render the question creation page
     """
-    return templates.TemplateResponse(request=request, name="question_form.html")
+    return templates.TemplateResponse(
+        request=request, name="question_form.html", context={"team": auth}
+    )
 
 
 @router.get(
@@ -144,7 +163,7 @@ async def update_question_page(
     return templates.TemplateResponse(
         request=request,
         name="question_form.html",
-        context={"question": question_public},
+        context={"question": question_public, "team": auth},
     )
 
 
