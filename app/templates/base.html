@@ -8,10 +8,14 @@
     {% endblock %}
 </head>
 <body>
-    {% include "navbar.html" %}
+    <header>
+      {% include "navbar.html" %}
+    </header>
     <main class="container">
       <div id="content">{% block content %}{% endblock %}</div>
-      <div id="footer"></div>
     </main>
+    <footer>
+      {% include "footer.html" %}
+    </footer>
 </body>
 </html>

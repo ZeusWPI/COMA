@@ -1,6 +1,26 @@
 @import url("navbar.css");
+@import url("footer.css");
 
 body {
   background-color: #644296;
   min-height: 100vh;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+header {
+  min-height: 50px;
+  background-color: #3D365C;
+  box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.2);
+  position: sticky;
+  top: 0;
+}
+
+main {
+  flex: 1;
+}
+
+footer {
+  min-height: 50px;
 }

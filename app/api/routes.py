@@ -16,6 +16,7 @@ from typing import Annotated
 router = APIRouter()
 
 templates = Jinja2Templates(directory="app/templates")
+templates.env.globals["now"] = datetime.now()
 
 
 @router.post("/team", response_class=RedirectResponse, tags=["team"])

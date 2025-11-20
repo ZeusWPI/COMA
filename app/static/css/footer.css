@@ -1,0 +1,19 @@
+.footer {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  justify-items: center;
+}
+
+.footer a {
+  color: inherit;
+  text-decoration: inherit;
+}
+
+.footer a:hover {
+  text-decoration: underline;
+}
+
+.footer-zeus img {
+  max-height: 24px;
+  width: auto;
+}
