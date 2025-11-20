@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Question Create{% endblock %}
 {% block content %}
-  <form method="POST" action="/admin/question" >
+<form method="POST" action={{ "/admin/question/" ~ question.id if question else "/admin/question" }} >
     <fieldset>
 	<label>
 	  Title
@@ -21,11 +21,7 @@
 	    name="body"
 	    placeholder="Write the question here...."
 	    required
-	    {% if question %}
-	      value="{{question.body}}"
-	    {% endif %}
-	  />
-	  </textarea>
+	  />{% if question %}{{question.body}}{% endif %}</textarea>
 	</label>
 
 	<label>
@@ -104,9 +100,16 @@
 
     </fieldset>
 
-    <input
-      type="submit"
-      value="Create"
-    />
+    {% if question %}
+      <input
+        type="submit"
+        value="Update"
+      />
+    {% else %}
+      <input
+        type="submit"
+        value="Create"
+      />
+    {% endif %}
   </form>
 {% endblock %}

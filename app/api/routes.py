@@ -79,7 +79,7 @@ async def new_question(request: Request, auth: AdminDep):
 @router.get(
     "/admin/question/{id}", response_class=HTMLResponse, tags=["admin", "questions"]
 )
-async def update_question(
+async def update_question_page(
     session: SessionDep, request: Request, auth: AdminDep, id: int
 ):
     """
@@ -123,7 +123,40 @@ async def create_question(
             detail="question number already exists",
         )
 
-    return RedirectResponse("/admin")
+    return RedirectResponse(f"/admin/question/{question.id}")
+
+
+@router.post(
+    "/admin/question/{id}", response_class=RedirectResponse, tags=["admin", "questions"]
+)
+async def update_question(
+    session: SessionDep,
+    auth: AdminDep,
+    id: int,
+    question_in: Annotated[QuestionCreate, Form()],
+):
+    """
+    create the new question and redirect to admin home page
+    """
+    question = session.get(Question, id)
+
+    if question is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="question not found"
+        )
+
+    update_data = question_in.model_dump(exclude_unset=True)
+
+    if "solution" in update_data:
+        update_data["solution"] = validate_question_answer(update_data["solution"])
+
+    for key, value in update_data.items():
+        setattr(question, key, value)
+
+    session.add(question)
+    session.commit()
+
+    return RedirectResponse(f"/admin/question/{question.id}", status_code=302)
 
 
 @router.get("/login", tags=["auth"], response_class=HTMLResponse)

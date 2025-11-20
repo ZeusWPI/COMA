@@ -33,7 +33,7 @@ class TeamCreated(TeamPublic):
 
 # Shared properties
 class QuestionBase(SQLModel):
-    title: str
+    title: str = Field(max_length=40)
     body: str
     max_score: float  # the score to calculate with
     # the score to render on the pag, for example sqrt root of 2
