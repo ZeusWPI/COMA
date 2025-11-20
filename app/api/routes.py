@@ -5,7 +5,7 @@ from fastapi import APIRouter, status, Request, Form, HTTPException
 from sqlmodel import select
 from app.api.models import Question, Submission, TeamCreate, Team
 from app.api.utils import generate_logo, generate_password, is_answer_correct
-from app.api.deps import AdminDep, SessionDep
+from app.api.deps import AdminDep, AuthDep, AuthOptionalDep, SessionDep
 from sqlalchemy.exc import IntegrityError
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse, PlainTextResponse, RedirectResponse
@@ -18,6 +18,13 @@ router = APIRouter()
 
 templates = Jinja2Templates(directory="app/templates")
 templates.env.globals["now"] = datetime.now()
+
+
+@router.get("/", response_class=RedirectResponse, tags=["home"])
+async def home_page(request: Request, auth: AuthDep):
+    return templates.TemplateResponse(
+        request=request, name="home.html", context={"team": auth}
+    )
 
 
 @router.post("/team", response_class=RedirectResponse, tags=["team"])
@@ -85,13 +92,15 @@ async def login(
         key=settings.JWT_SECRET_KEY,
         algorithm=settings.JWT_ALGORITHM,
     )
-    response = RedirectResponse("/")
+    response = RedirectResponse("/", status_code=302)
     response.set_cookie(key="auth_jwt", value=team_jwt)
     return response
 
 
 @router.get("/leaderboard", tags=["leaderboard"], response_class=HTMLResponse)
-async def leaderboard_page(session: SessionDep, request: Request):
+async def leaderboard_page(
+    session: SessionDep, request: Request, auth: AuthOptionalDep
+):
     """
     Render the leaderboard page
     """
@@ -123,7 +132,9 @@ async def leaderboard_page(session: SessionDep, request: Request):
             {"name": i.name, "img": base64.b64encode(bytes.getvalue()).decode()}
         )
     return templates.TemplateResponse(
-        request=request, name="leaderboard.html", context={"teams": template_teams}
+        request=request,
+        name="leaderboard.html",
+        context={"teams": template_teams, "team": auth},
     )
 
 

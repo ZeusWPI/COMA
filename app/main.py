@@ -1,7 +1,9 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import RedirectResponse
 from fastapi.routing import APIRoute
 from fastapi.staticfiles import StaticFiles
 
+from app.api.exception import RequiresLoginException
 from app.api.routes import router
 from app.core.config import settings
 
@@ -16,5 +18,11 @@ app = FastAPI(
 )
 
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
+
+
+@app.exception_handler(RequiresLoginException)
+async def requires_login_handler(request: Request, exc: RequiresLoginException):
+    return RedirectResponse("/login")
+
 
 app.include_router(router)
