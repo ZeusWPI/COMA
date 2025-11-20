@@ -123,7 +123,10 @@ async def leaderboard_page(session: SessionDep, request: Request):
                 if correct:
                     score += j.max_score
                     break
-        logo = generate_logo(score / max_score)
+        quality = 1
+        if max_score != 0:
+            quality = score / max_score
+        logo = generate_logo(quality)
         bytes = io.BytesIO()
         logo.save(bytes, format="PNG")
         template_teams.append(
