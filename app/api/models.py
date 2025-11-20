@@ -1,4 +1,3 @@
-from pydantic import BaseModel
 from sqlmodel import Field, SQLModel
 
 
@@ -30,7 +29,19 @@ class TeamCreated(TeamPublic):
     password: str
 
 
-# Properties to receive when logging in
-class LoginRequest(BaseModel):
-    team_name: str
-    password: str
+# Shared properties
+class QuestionBase(SQLModel):
+    title: str
+    body: str
+    max_score: float  # the score to calculate with
+    # the score to render on the pag, for example sqrt root of 2
+    # should match max_score as much as possiblee
+    max_score_display: str
+    number: int = Field(unique=True)
+    visible: bool = Field(default=True)
+
+
+# Database model
+class Question(QuestionBase, table=True):
+    id: int = Field(default=None, primary_key=True)
+    solution: float
