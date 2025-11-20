@@ -3,7 +3,7 @@
 import pandoc
 
 
-def render_md(md: str, math_renderer: str = "--mathjax"):
+def render_md(md: str, math_renderer: str = "--mathml"):
     """
     Render the markdown string `md` to html.
 
