@@ -1,5 +1,38 @@
 {% extends "base.html" %}
 {% block title %}Home{% endblock %}
 {% block content %}
-  <div>Home</div>
+  <div class="home-root">
+    <div class="home-layout">
+      <div class="home-logo">
+        <strong>Team progress logo</strong>
+        <img class="home-logo" src="data:image/png;base64,{{ img }}" />
+      </div>
+
+      <table class="home-questions-table">
+        <thead>
+          <tr>
+            <th>Question</th>
+            <th>Submissions</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {% for q in questions %}
+            <tr onclick="window.location='/question/{{q.question.id}}'">
+              <td>{{ q.question.title }}</td>
+              <td>{{ q.submissions }}</td>
+              <td>
+                {% if q.correct %}
+                  <span class="status solved">Solved ✓</span>
+                {% else %}
+                  <span class="status unsolved">Not solved ✗</span>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
 {% endblock %}

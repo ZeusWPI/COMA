@@ -5,10 +5,37 @@ import textwrap
 
 from fastapi import HTTPException, status
 from PIL import Image
+from sqlmodel import select
+
+from app.api.models import Question, Submission, Team
+from app.api.deps import SessionDep
 
 
 def generate_password() -> str:
     return secrets.token_urlsafe(10)
+
+
+def get_team_quality(session: SessionDep, team: Team) -> float:
+    score = 0
+    max_score = 0
+    questions = session.exec(select(Question)).all()
+    all_submissions = session.exec(
+        select(Submission).where(Submission.team_id == team.id)
+    )
+    for question in questions:
+        max_score += question.max_score
+        submissions = [s for s in all_submissions if s.question_id == question.id]
+        # TODO: Add penalty for wrong answers and only consider last answer
+        for submission in submissions:
+            if is_answer_correct(submission.answer, question.solution):
+                score += question.max_score
+                break
+
+    quality = 1
+    if max_score != 0:
+        quality = score / max_score
+
+    return quality
 
 
 def generate_logo(quality: float) -> Image.Image:

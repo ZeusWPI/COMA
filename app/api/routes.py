@@ -1,5 +1,7 @@
 import base64
 import csv
+from dataclasses import dataclass
+from datetime import datetime, timezone
 import io
 from datetime import datetime, timezone
 from typing import Annotated
@@ -10,7 +12,13 @@ from fastapi.responses import HTMLResponse, PlainTextResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.exc import IntegrityError
 from sqlmodel import select
-
+from app.api.models import Question, Submission, TeamCreate, Team
+from app.api.utils import (
+    generate_logo,
+    generate_password,
+    get_team_quality,
+    is_answer_correct,
+)
 from app.api.deps import AdminDep, AuthDep, AuthOptionalDep, SessionDep
 from app.api.models import Question, QuestionCreate, Submission, Team, TeamCreate
 from app.api.utils import (
@@ -28,9 +36,54 @@ templates.env.globals["now"] = datetime.now()
 
 
 @router.get("/", response_class=RedirectResponse, tags=["home"])
-async def home_page(request: Request, auth: AuthDep):
+async def home_page(request: Request, session: SessionDep, auth: AuthDep):
+    # Get logo
+    quality = get_team_quality(session, auth)
+    logo = generate_logo(quality)
+    bytes = io.BytesIO()
+    logo.save(bytes, format="PNG")
+
+    # Get questions
+    questions = session.exec(select(Question)).all()
+    submissions = session.exec(
+        select(Submission).where(Submission.team_id == auth.id)
+    ).all()
+
+    @dataclass
+    class TeamQuestion:
+        question: Question
+        submissions: int
+        correct: bool
+
+    team_questions: list[TeamQuestion] = []
+
+    for question in questions:
+        question_submissions = [s for s in submissions if s.question_id == question.id]
+        correct_submission = next(
+            (
+                s
+                for s in question_submissions
+                if is_answer_correct(s.answer, question.solution)
+            ),
+            None,
+        )
+
+        team_questions.append(
+            TeamQuestion(
+                question,
+                len(question_submissions),
+                bool(correct_submission),
+            )
+        )
+
     return templates.TemplateResponse(
-        request=request, name="home.html", context={"team": auth}
+        request=request,
+        name="home.html",
+        context={
+            "team": auth,
+            "questions": team_questions,
+            "img": base64.b64encode(bytes.getvalue()).decode(),
+        },
     )
 
 
@@ -204,30 +257,13 @@ async def leaderboard_page(
     """
     template_teams = []
     teams = session.exec(select(Team)).all()
-    for i in teams:
-        score = 0
-        max_score = 0
-        questions = session.exec(select(Question)).all()
-        for j in questions:
-            max_score += j.max_score
-            submissions = session.exec(
-                select(Submission).where(
-                    Submission.team_id == i.id, Submission.question_id == j.id
-                )
-            ).all()
-            # TODO: Add penalty for wrong answers and only consider last answer
-            for k in submissions:
-                if is_answer_correct(k.answer, j.solution):
-                    score += j.max_score
-                    break
-        quality = 1
-        if max_score != 0:
-            quality = score / max_score
+    for team in teams:
+        quality = get_team_quality(session, team)
         logo = generate_logo(quality)
         bytes = io.BytesIO()
         logo.save(bytes, format="PNG")
         template_teams.append(
-            {"name": i.name, "img": base64.b64encode(bytes.getvalue()).decode()}
+            {"name": team.name, "img": base64.b64encode(bytes.getvalue()).decode()}
         )
     return templates.TemplateResponse(
         request=request,
