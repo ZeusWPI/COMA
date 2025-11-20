@@ -1,6 +1,7 @@
 import base64
 from datetime import datetime, timezone
 import io
+import textwrap
 from fastapi import APIRouter, status, Request, Form, HTTPException
 from sqlmodel import select
 from app.api.models import Question, Submission, TeamCreate, Team
@@ -109,7 +110,17 @@ async def leaderboard_page(session: SessionDep, request: Request):
             ).all()
             # TODO: Add penalty for wrong answers and only consider last answer
             for k in submissions:
-                if k.answer == j.solution:
+                correct = False
+                if "." not in k.answer and k.answer == j.solution:
+                    correct = True
+                if k.answer.count(".") == 1 and j.solution.count(".") == 1:
+                    split_1 = k.answer.split(".")
+                    split_2 = j.solution.split(".")
+                    after_decimal_1 = textwrap.wrap(split_1[1], 10)[0]
+                    after_decimal_2 = textwrap.wrap(split_2[1], 10)[0]
+                    if split_1[0] == split_2[0] and after_decimal_1 == after_decimal_2:
+                        correct = True
+                if correct:
                     score += j.max_score
                     break
         logo = generate_logo(score / max_score)
