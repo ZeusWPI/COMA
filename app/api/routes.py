@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
-from fastapi import APIRouter, Response, status, Request, Form, HTTPException
+from fastapi import APIRouter, status, Request, Form, HTTPException
 from sqlmodel import select
-from app.api.models import LoginRequest, TeamCreate, Team
+from app.api.models import TeamCreate, Team
 from app.api.utils import generate_password
 from app.api.deps import AdminDep, SessionDep
 from sqlalchemy.exc import IntegrityError
@@ -59,14 +59,14 @@ async def login_page(request: Request):
 
 
 @router.post("/login", tags=["auth"])
-async def login(session: SessionDep, name: Annotated[str, Form()], password: Annotated[str, Form()]):
+async def login(
+    session: SessionDep, name: Annotated[str, Form()], password: Annotated[str, Form()]
+):
     """
     Log in and create a JWT
     """
     team = session.exec(
-        select(Team).where(
-            Team.name == name, Team.password == password
-        )
+        select(Team).where(Team.name == name, Team.password == password)
     ).first()
     if team is None:
         raise HTTPException(
