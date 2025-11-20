@@ -1,8 +1,10 @@
+import base64
 from datetime import datetime, timezone
+import io
 from fastapi import APIRouter, status, Request, Form, HTTPException
 from sqlmodel import select
 from app.api.models import Question, Submission, TeamCreate, Team
-from app.api.utils import generate_password
+from app.api.utils import generate_logo, generate_password
 from app.api.deps import AdminDep, SessionDep
 from sqlalchemy.exc import IntegrityError
 from fastapi.templating import Jinja2Templates
@@ -95,8 +97,10 @@ async def leaderboard_page(session: SessionDep, request: Request):
     teams = session.exec(select(Team)).all()
     for i in teams:
         score = 0
+        max_score = 0
         questions = session.exec(select(Question)).all()
         for j in questions:
+            max_score += j.max_score
             submissions = session.exec(
                 select(Submission).where(
                     Submission.team_id == i.id, Submission.question_id == j.id
@@ -107,7 +111,12 @@ async def leaderboard_page(session: SessionDep, request: Request):
                 if k.answer == j.solution:
                     score += j.max_score
                     break
-        template_teams.append({"name": i.name, "score": score})
+        logo = generate_logo(score / max_score)
+        bytes = io.BytesIO()
+        logo.save(bytes, format="PNG")
+        template_teams.append(
+            {"name": i.name, "img": base64.b64encode(bytes.getvalue()).decode()}
+        )
     return templates.TemplateResponse(
         request=request, name="leaderboard.html", context={"teams": template_teams}
     )
