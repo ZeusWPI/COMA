@@ -1,8 +1,7 @@
 import base64
 import csv
-from dataclasses import dataclass
-from datetime import datetime, timezone
 import io
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Annotated
 
@@ -12,18 +11,13 @@ from fastapi.responses import HTMLResponse, PlainTextResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.exc import IntegrityError
 from sqlmodel import select
-from app.api.models import Question, Submission, TeamCreate, Team
-from app.api.utils import (
-    generate_logo,
-    generate_password,
-    get_team_quality,
-    is_answer_correct,
-)
+
 from app.api.deps import AdminDep, AuthDep, AuthOptionalDep, SessionDep
 from app.api.models import Question, QuestionCreate, Submission, Team, TeamCreate
 from app.api.utils import (
     generate_logo,
     generate_password,
+    get_team_quality,
     is_answer_correct,
     validate_question_answer,
 )

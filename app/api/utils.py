@@ -7,8 +7,8 @@ from fastapi import HTTPException, status
 from PIL import Image
 from sqlmodel import select
 
-from app.api.models import Question, Submission, Team
 from app.api.deps import SessionDep
+from app.api.models import Question, Submission, Team
 
 
 def generate_password() -> str:
