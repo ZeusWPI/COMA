@@ -45,7 +45,9 @@ async def show_team(request: Request, session: SessionDep, id: int):
     Return detail page of team, only admins have access
     """
     team = session.get(Team, id)
-    return templates.TemplateResponse(request=request, name="team_show.html", context={"team": team})
+    return templates.TemplateResponse(
+        request=request, name="team_show.html", context={"team": team}
+    )
 
 
 @router.post("/login", tags=["auth"])
@@ -53,7 +55,11 @@ async def login(session: SessionDep, request: LoginRequest):
     """
     Log in and create a JWT
     """
-    team = session.exec(select(Team).where(Team.name == request.team_name, Team.password == request.password)).first()
+    team = session.exec(
+        select(Team).where(
+            Team.name == request.team_name, Team.password == request.password
+        )
+    ).first()
     if team is None:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid credentials")
     team_jwt = jwt.encode(payload={"id": team.id, "exp": datetime.now(tz=timezone.utc)}, key=settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)

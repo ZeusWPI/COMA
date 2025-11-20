@@ -11,6 +11,7 @@ class TeamBase(SQLModel):
 class Team(TeamBase, table=True):
     id: int = Field(default=None, primary_key=True)
     password: str = Field()
+    admin: bool = Field(default=False)
 
 
 # Properties to receive on team create
@@ -21,6 +22,7 @@ class TeamCreate(TeamBase):
 # Properties to return for public endpoints
 class TeamPublic(TeamBase):
     id: int
+    admin: bool
 
 
 # Properties to return after team creation
