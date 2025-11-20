@@ -3,7 +3,7 @@ from fastapi import APIRouter, Response, status, Request
 from sqlmodel import select
 from app.api.models import LoginRequest, TeamCreate, Team
 from app.api.utils import generate_password
-from app.api.deps import SessionDep
+from app.api.deps import AuthDep, SessionDep
 from fastapi import HTTPException
 from sqlalchemy.exc import IntegrityError
 from fastapi.templating import Jinja2Templates
@@ -17,7 +17,7 @@ templates = Jinja2Templates(directory="app/templates")
 
 
 @router.post("/team", response_class=RedirectResponse, tags=["team"])
-async def create_team(session: SessionDep, team_in: TeamCreate):
+async def create_team(session: SessionDep, team_in: TeamCreate, team_auth: AuthDep):
     """
     Create a new team and returns generated password
     """
@@ -62,7 +62,7 @@ async def login(session: SessionDep, request: LoginRequest):
     ).first()
     if team is None:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid credentials")
-    team_jwt = jwt.encode(payload={"id": team.id, "exp": datetime.now(tz=timezone.utc)}, key=settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
+    team_jwt = jwt.encode(payload={"id": team.id, "exp": datetime.now(tz=timezone.utc).timestamp() + settings.JWT_EXPIRE_MINUTES * 60}, key=settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
     response = Response()
-    response.set_cookie(key="jwt", value=team_jwt)
+    response.set_cookie(key="auth_jwt", value=team_jwt)
     return response
