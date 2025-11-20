@@ -1,3 +1,4 @@
+from datetime import datetime
 from sqlmodel import Field, SQLModel
 
 
@@ -45,3 +46,21 @@ class QuestionBase(SQLModel):
 class Question(QuestionBase, table=True):
     id: int = Field(default=None, primary_key=True)
     solution: float
+
+
+# Shared properties
+class SubmissionBase(SQLModel):
+    answer: str
+
+
+# Properties to receive on create
+class SubmissionCreate(SubmissionBase):
+    pass
+
+
+# Database model
+class Submission(SubmissionBase, table=True):
+    id: int = Field(default=None, primary_key=True)
+    team_id: int = Field(foreign_key="team.id")
+    question_id: int = Field(foreign_key="question.id")
+    timestamp: datetime
