@@ -1,15 +1,15 @@
 from datetime import datetime, timezone
-from fastapi import APIRouter, Response, status, Request
+from fastapi import APIRouter, Response, status, Request, Form, HTTPException
 from sqlmodel import select
 from app.api.models import LoginRequest, TeamCreate, Team
 from app.api.utils import generate_password
 from app.api.deps import AdminDep, SessionDep
-from fastapi import HTTPException
 from sqlalchemy.exc import IntegrityError
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse, RedirectResponse
 import jwt
 from app.core.config import settings
+from typing import Annotated
 
 router = APIRouter()
 
@@ -50,14 +50,22 @@ async def show_team(request: Request, session: SessionDep, id: int):
     )
 
 
+@router.get("/login", tags=["auth"], response_class=HTMLResponse)
+async def login_page(request: Request):
+    """
+    Render the login page
+    """
+    return templates.TemplateResponse(request=request, name="login.html")
+
+
 @router.post("/login", tags=["auth"])
-async def login(session: SessionDep, request: LoginRequest):
+async def login(session: SessionDep, name: Annotated[str, Form()], password: Annotated[str, Form()]):
     """
     Log in and create a JWT
     """
     team = session.exec(
         select(Team).where(
-            Team.name == request.team_name, Team.password == request.password
+            Team.name == name, Team.password == password
         )
     ).first()
     if team is None:
@@ -73,6 +81,6 @@ async def login(session: SessionDep, request: LoginRequest):
         key=settings.JWT_SECRET_KEY,
         algorithm=settings.JWT_ALGORITHM,
     )
-    response = Response()
+    response = RedirectResponse("/")
     response.set_cookie(key="auth_jwt", value=team_jwt)
     return response
