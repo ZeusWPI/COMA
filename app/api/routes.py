@@ -127,6 +127,33 @@ async def leaderboard_page(session: SessionDep, request: Request):
     )
 
 
+@router.get("/admin/teams.csv", tags=["admin"])
+async def teams_csv(request: Request, session: SessionDep, auth: AdminDep):
+    """
+    Return a CSV with the number of attempts of teams
+    """
+    teams = session.exec(select(Team)).all()
+    questions = session.exec(select(Question)).all()
+    output = io.StringIO()
+    writer = csv.writer(output)
+    header = ["Team Name"]
+    for i in questions:
+        header.append(f"Question #{i.number}")
+    writer.writerow(header)
+    for i in teams:
+        row = [i.name]
+        for j in questions:
+            submissions = session.exec(
+                select(Submission).where(
+                    Submission.team_id == i.id, Submission.question_id == j.id
+                )
+            ).all()
+            row.append(str(len(submissions)))
+        writer.writerow(row)
+
+    return PlainTextResponse(output.getvalue())
+
+
 @router.get("/admin/answers.csv", tags=["admin"])
 async def answers_csv(request: Request, session: SessionDep, auth: AdminDep):
     """
