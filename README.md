@@ -98,3 +98,11 @@ After creating the revision, run the migration in the database (this is what wil
 ```console
 alembic upgrade head
 ```
+
+### Admin
+
+To create an admin user in the dev database, run:
+
+```console
+podman compose -f docker-compose.dev.yml exec dev-db psql coma coma -c"INSERT INTO team (name, password, admin) VALUES ('admin', 'admin', true);"
+```
