@@ -1,1 +1,6 @@
-@import url("navbar.css")
+@import url("navbar.css");
+
+body {
+  background-color: #644296;
+  min-height: 100vh;
+}

@@ -9,8 +9,9 @@
 </head>
 <body>
     {% include "navbar.html" %}
-    <div id="content">{% block content %}{% endblock %}</div>
-    <div id="footer">
-    </div>
+    <main class="container">
+      <div id="content">{% block content %}{% endblock %}</div>
+      <div id="footer"></div>
+    </main>
 </body>
 </html>
