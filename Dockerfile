@@ -6,7 +6,7 @@ FROM base AS common
 RUN export DEBIAN_FRONTEND=noninteractive && \
     apt-get update && \
     apt-get install -y \
-        build-essential libpq-dev
+        build-essential libpq-dev pandoc
 
 ENV UV_COMPILE_BYTECODE=1
 ENV UV_LINK_MODE=copy
