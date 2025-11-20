@@ -9,17 +9,38 @@ from app.core.db import get_session
 SessionDep = Annotated[Session, Depends(get_session)]
 
 
-async def authenticate_team(session: SessionDep, auth_jwt: Annotated[str | None, Cookie()]) -> Team:
+async def authenticate_team(
+    session: SessionDep, auth_jwt: Annotated[str | None, Cookie()]
+) -> Team:
     if auth_jwt is None:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Authentication required")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Authentication required"
+        )
     try:
-        team_jwt = jwt.decode(auth_jwt, key=settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
+        team_jwt = jwt.decode(
+            auth_jwt, key=settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM]
+        )
     except jwt.ExpiredSignatureError:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Cookie expired")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Cookie expired"
+        )
     team = session.exec(select(Team).where(Team.id == team_jwt["id"])).first()
     if team is None:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Team doesn't exist")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Team doesn't exist"
+        )
     return team
 
 
 AuthDep = Annotated[Team, Depends(authenticate_team)]
+
+
+async def authenticate_admin(team: AuthDep):
+    if not team.admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You need to be admin to do this",
+        )
+
+
+AdminDep = Annotated[None, Depends(authenticate_admin)]
