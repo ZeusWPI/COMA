@@ -19,7 +19,7 @@ class TeamCreate(TeamBase):
 
 # Properties to return for public endpoints
 class TeamPublic(TeamBase):
-    pass
+    id: int
 
 
 # Properties to return after team creation
