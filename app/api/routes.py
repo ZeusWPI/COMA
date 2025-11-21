@@ -7,7 +7,12 @@ from typing import Annotated
 
 import jwt
 from fastapi import APIRouter, Form, HTTPException, Request, status
-from fastapi.responses import HTMLResponse, PlainTextResponse, RedirectResponse
+from fastapi.responses import (
+    HTMLResponse,
+    PlainTextResponse,
+    RedirectResponse,
+    Response,
+)
 from fastapi.templating import Jinja2Templates
 from sqlalchemy import desc, text
 from sqlalchemy.exc import IntegrityError
@@ -31,7 +36,7 @@ from app.api.utils import (
     validate_question_answer,
 )
 from app.core.config import settings
-from app.core.render_utils import render_md_to_html
+from app.core.render_utils import render_html_to_pdf, render_md_to_html
 
 router = APIRouter()
 
@@ -544,3 +549,22 @@ async def answers_csv(request: Request, session: SessionDep, auth: AdminDep):
         )
 
     return PlainTextResponse(output.getvalue())
+
+
+@router.get("/questions-pdf", tags=["export"])
+async def questions_pdf(session: SessionDep):
+    """Return a printable pdf file with all questions."""
+    sorted_visible_questions = session.exec(
+        select(Question).where(Question.visible).order_by(Question.number)
+    ).all()
+    html_template = templates.get_template("questions_pdf.html")
+    html = html_template.render(
+        sorted_visible_questions=sorted_visible_questions,
+        render_md_to_html=render_md_to_html,
+    )
+    # return HTMLResponse(html)
+    pdf = render_html_to_pdf(html)
+    return Response(
+        content=pdf,
+        media_type="application/pdf",
+    )

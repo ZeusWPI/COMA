@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>COMA Questions</title>
+    <link rel="stylesheet" href="app/static/css/pico.min.css" />
+    <link rel="stylesheet" href="app/static/css/main.css" />
+    <style>annotation{display: none;}</style>
+  </head>
+  <body>
+    {% for q in sorted_visible_questions %}
+      <h2>{{q.number}}. {{render_md_to_html(q.title, inline=True)|safe}} ({{render_md_to_html("$" ~ q.max_score_display ~ "$", inline=True)|safe}})</h2>
+    {{render_md_to_html(q.body)|safe}}
+    {% endfor %}
+  </body>
+</html>

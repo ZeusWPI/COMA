@@ -3,6 +3,7 @@
 from typing import List, Tuple
 
 import pandoc
+import weasyprint
 from pandoc.types import Meta, Pandoc, Plain
 
 
@@ -36,3 +37,10 @@ def render_md_to_html(
         options=[math_renderer],
     )
     return html
+
+
+def render_html_to_pdf(html: str) -> bytes:
+    """Render the html string `html` to an in-memory pdf file."""
+    html_doc = weasyprint.HTML(string=html)
+    pdf_doc: weasyprint.Document = html_doc.render()
+    return pdf_doc.write_pdf()
