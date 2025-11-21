@@ -7,6 +7,7 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     apt-get update && \
     apt-get install -y \
         build-essential libglib2.0-dev libpango1.0-dev libpq-dev \
+        nodejs npm \
         pandoc
 
 ENV UV_COMPILE_BYTECODE=1
@@ -15,12 +16,16 @@ ENV UV_TOOL_BIN_DIR=/usr/local/bin
 
 WORKDIR /app
 
-# Install dependencies
+# Install nodejs dependencies
+COPY ./package.json pnpm-lock.yaml ./
+RUN npm ci
+
+# Install python dependencies
 COPY ./pyproject.toml ./uv.lock ./
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --locked --no-install-project --no-dev
 
-# Activate the venv
+# Activate the python venv
 ENV PATH="/app/.venv/bin:$PATH"
 
 

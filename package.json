@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "mathjax-node-cli": "^1.0.1"
+  },
+  "overrides": {
+    "mathjax-node-cli": {
+      "yargs": "^17.7.2"
+    }
+  }
+}
