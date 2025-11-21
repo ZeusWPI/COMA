@@ -99,6 +99,12 @@ After creating the revision, run the migration in the database (this is what wil
 alembic upgrade head
 ```
 
+Or in docker compose:
+
+```console
+docker compose -f docker-compose.dev.yml exec dev-backend alembic upgrade head
+```
+
 ### Admin
 
 To create an admin user in the dev database, run:
