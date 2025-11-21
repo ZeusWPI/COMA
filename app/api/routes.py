@@ -14,7 +14,14 @@ from sqlalchemy.exc import IntegrityError
 from sqlmodel import select
 
 from app.api.deps import AdminDep, AuthDep, AuthOptionalDep, SessionDep
-from app.api.models import Question, QuestionCreate, Submission, Team, TeamCreate
+from app.api.models import (
+    Question,
+    QuestionCreate,
+    Submission,
+    SubmissionCreate,
+    Team,
+    TeamCreate,
+)
 from app.api.utils import (
     generate_logo,
     generate_password,
@@ -228,7 +235,7 @@ async def update_question(
     return RedirectResponse(f"/admin/question/{question.id}", status_code=302)
 
 
-@router.get("/question/{id}", response_class=HTMLResponse, tags=["questions"])
+@router.get("/question/{id}", response_class=HTMLResponse, tags=["question"])
 async def show_question(id: int, session: SessionDep, auth: AuthDep, request: Request):
     """
     Return the detail page of a question with submission form
@@ -240,11 +247,53 @@ async def show_question(id: int, session: SessionDep, auth: AuthDep, request: Re
             status_code=status.HTTP_404_NOT_FOUND, detail="question not found"
         )
 
+    submissions = session.exec(
+        select(Submission).where(
+            Submission.team_id == auth.id, Submission.question_id == question.id
+        )
+    ).all()
+
     return templates.TemplateResponse(
         request=request,
         name="question_show.html",
-        context={"team": auth, "question": question, "render_md": render_md},
+        context={
+            "team": auth,
+            "question": question,
+            "render_md": render_md,
+            "submissions": submissions,
+        },
     )
+
+
+@router.post(
+    "/question/{id}/submission", response_class=RedirectResponse, tags=["submission"]
+)
+async def create_submission(
+    session: SessionDep,
+    auth: AuthDep,
+    id: int,
+    submission_in: Annotated[SubmissionCreate, Form()],
+):
+    """
+    Create a new submission
+    """
+    question = session.get(Question, id)
+
+    if question is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="question not found"
+        )
+
+    submission = Submission(
+        answer=validate_question_answer(submission_in.answer),
+        team_id=auth.id,
+        question_id=question.id,
+    )
+
+    session.add(submission)
+    session.commit()
+
+    return RedirectResponse(f"/question/{id}", status_code=302)
 
 
 @router.get("/login", tags=["auth"], response_class=HTMLResponse)

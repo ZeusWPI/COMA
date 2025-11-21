@@ -6,14 +6,14 @@
   
   <p> {{ render_md(question.body)|safe }} </p>
   
-  <form method="POST" action="/question/{{question.id}}">
+  <form method="POST" action="/question/{{question.id}}/submission">
     <fieldset>
       <label>
         Submission
         <input 
           type="text" 
-          name="solution" 
-          placeholder="solution..." 
+          name="answer" 
+          placeholder="your answer..." 
           required
         />
       </label>
@@ -23,4 +23,16 @@
         value="Create"
       />
   </form>
+
+  <h2> Previous Submissions </h2>
+
+  {% if submissions %}
+    <ul>
+      {% for submission in submissions %}
+        <li> {{ submission.answer }} </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p><b> No submissions yet </b></p>
+  {% endif %}
 {% endblock %}

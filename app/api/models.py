@@ -58,7 +58,7 @@ class Submission(SubmissionBase, table=True):
     id: int = Field(default=None, primary_key=True)
     team_id: int = Field(foreign_key="team.id")
     question_id: int = Field(foreign_key="question.id")
-    timestamp: datetime
+    timestamp: datetime = Field(default_factory=datetime.now)
 
 
 # Database model
