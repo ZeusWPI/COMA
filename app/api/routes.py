@@ -92,6 +92,15 @@ async def home_page(request: Request, session: SessionDep, auth: AuthDep):
 
 
 @router.get("/admin/team", response_class=HTMLResponse, tags=["admin", "team"])
+async def team_admin_page(request: Request, auth: AdminDep, session: SessionDep):
+    teams = session.exec(select(Team)).all()
+
+    return templates.TemplateResponse(
+        request=request, name="team_admin.html", context={"team": auth, "teams": teams}
+    )
+
+
+@router.get("/admin/team/create", response_class=HTMLResponse, tags=["admin", "team"])
 async def new_team(request: Request, auth: AdminDep):
     """
     Return page for new team creation
@@ -101,7 +110,9 @@ async def new_team(request: Request, auth: AdminDep):
     )
 
 
-@router.post("/admin/team", response_class=RedirectResponse, tags=["admin", "team"])
+@router.post(
+    "/admin/team/create", response_class=RedirectResponse, tags=["admin", "team"]
+)
 async def create_team(
     session: SessionDep, team_in: Annotated[TeamCreate, Form()], auth: AdminDep
 ):

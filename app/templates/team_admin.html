@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Admin{% endblock %}
+{% block content %}
+  <div class="team-admin-layout">
+    <button onclick="window.location='/admin/team/create'">Create</button>
+    <table class="team-admin-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Admin</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for t in teams %}
+          <tr>
+            <td>{{ t.name }}</td>
+            <td>
+              <span class="team-admin-admin">
+                {% if t.admin %}
+                  ✓
+                {% else %}
+                  ✗
+                {% endif %}
+              </span>
+            </td>
+            <td>
+              <div>
+                <button onclick="window.location='/admin/team/{{t.id}}'" class="outline">👁️</button>
+                <button class="outline">✏️</button>
+                <button class="outline">🗑️</button>
+              </div>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endblock %}

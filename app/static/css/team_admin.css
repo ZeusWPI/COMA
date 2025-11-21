@@ -1,0 +1,33 @@
+.team-admin-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.team-admin-table {
+  width: 100%;
+  table-layout: fixed;
+}
+
+.team-admin-table th:first-child,
+.team-admin-table td:first-child {
+  width: 70%;
+}
+
+.team-admin-table th:nth-child(2),
+.team-admin-table td:nth-child(2) {
+  width: 10%;
+  text-align: center;
+}
+
+.team-admin-table th:nth-child(3),
+.team-admin-table td:nth-child(3) {
+  width: 20%;
+  text-align: center;
+}
+
+.team-admin-admin {
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.3rem;
+  font-size: 0.85rem;
+}

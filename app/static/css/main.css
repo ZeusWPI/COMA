@@ -2,6 +2,7 @@
 @import url("footer.css");
 @import url("home.css");
 @import url("admin.css");
+@import url("team_admin.css");
 
 body {
   background-color: #644296;
