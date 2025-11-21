@@ -7,23 +7,30 @@ import weasyprint
 from pandoc.types import Meta, Pandoc, Plain
 
 
-def render_md_to_html(
-    md: str,
-    inline: bool = False,
-    math_renderer: str = "--mathml",
-) -> str:
+def plumbum_call_with_log(self, args):
+    """Wrap LocalCommand() for logging pandoc stdout/stderr."""
+    res = self.run(args)
+    print(f"{self.executable} {' '.join(args)}:")
+    print(f"  status: {res[0]}")
+    print(f"  stdout: {res[1]}")
+    print(f"  stderr: {res[2]}")
+    return res[1]
+
+
+pandoc.plumbum.machines.LocalCommand.__call__ = plumbum_call_with_log
+
+
+def render_md_to_html(md: str, inline: bool = False) -> str:
     """
     Render the markdown string `md` to html.
 
     The html is not wrapped in any enclosing tag.
     It is just a stream of elements (`<p>`, `<h1>`, ...).
 
-    The `math_renderer` argument can be set to any of:
-    - `--mathml`
-    - `--mathjax`
-    - `--katex`
-    The default is "--mathml", which has no external dependencies, except for a
-    somewhat modern browser.
+    Use the `inline` parameter to return the children of the first, topmost
+    element.
+
+    Math expressions `$expr$` and `$$expr$$` are rendered as svg's.
     """
     doc: Tuple(Meta, List[Pandoc]) = pandoc.read(
         source=md,
@@ -34,7 +41,10 @@ def render_md_to_html(
     html = pandoc.write(
         doc=doc,
         format="html",
-        options=[math_renderer],
+        options=[
+            "--lua-filter=pandoc-filters/math2svg.lua",
+            "--mathml", # Fallback
+        ],
     )
     return html
 
