@@ -9,7 +9,7 @@ import jwt
 from fastapi import APIRouter, Form, HTTPException, Request, status
 from fastapi.responses import HTMLResponse, PlainTextResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
-from sqlalchemy import text
+from sqlalchemy import desc, text
 from sqlalchemy.exc import IntegrityError
 from sqlmodel import select
 
@@ -312,7 +312,7 @@ async def leaderboard_page(
 async def admin_page(request: Request, session: SessionDep, auth: AdminDep):
     questions = session.exec(select(Question).order_by(text("Question.number"))).all()
     submissions = session.exec(
-        select(Submission).order_by(text("Submission.timestamp"))
+        select(Submission).order_by(desc(text("Submission.timestamp")))
     ).all()
     teams = session.exec(select(Team).order_by(text("Team.name"))).all()
 
