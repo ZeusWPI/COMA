@@ -15,21 +15,29 @@ def generate_password() -> str:
     return secrets.token_urlsafe(10)
 
 
-def get_team_quality(session: SessionDep, team: Team) -> float:
+def get_team_score(session: SessionDep, team: Team) -> float:
     score = 0
-    max_score = 0
     questions = session.exec(select(Question)).all()
     all_submissions = session.exec(
         select(Submission).where(Submission.team_id == team.id)
     )
+
     for question in questions:
-        max_score += question.max_score
         submissions = [s for s in all_submissions if s.question_id == question.id]
         # TODO: Add penalty for wrong answers and only consider last answer
         for submission in submissions:
             if is_answer_correct(submission.answer, question.solution):
                 score += question.max_score
                 break
+
+    return score
+
+
+def get_team_quality(session: SessionDep, team: Team) -> float:
+    score = get_team_score(session, team)
+
+    questions = session.exec(select(Question)).all()
+    max_score = sum(x.max_score for x in questions)
 
     quality = 1
     if max_score != 0:

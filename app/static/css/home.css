@@ -49,18 +49,18 @@
   text-align: center;
 }
 
-.home-questions-table .status {
+.home-questions-table .home-status {
   padding: 0.25rem 0.5rem;
   border-radius: 0.3rem;
   font-size: 0.85rem;
 }
 
-.home-questions-table .solved {
+.home-questions-table .home-solved {
   background: #d4f8dd;
   color: #145c2d;
 }
 
-.home-questions-table .unsolved {
+.home-questions-table .home-unsolved {
   background: #fde2e2;
   color: #8a1f1f;
 }

@@ -1,0 +1,38 @@
+.admin-container {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.admin-table {
+  width: max-content;
+  min-width: 100%;
+}
+
+.admin-table td:first-child,
+.admin-table th:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  text-align: left;
+  padding-left: 0.5rem;
+}
+
+.admin-table td {
+  text-align: center;
+  padding: 0.25rem 0.5rem;
+}
+
+.admin-table td.solved {
+  background-color: #d4f8dd;
+  color: #145c2d;
+}
+
+.admin-table td.unsolved {
+  background-color: #fde2e2;
+  color: #8a1f1f;
+}
+
+.admin-table th {
+  text-align: center;
+  padding: 0.25rem 0.5rem;
+}

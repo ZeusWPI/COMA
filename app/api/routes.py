@@ -9,6 +9,7 @@ import jwt
 from fastapi import APIRouter, Form, HTTPException, Request, status
 from fastapi.responses import HTMLResponse, PlainTextResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
+from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError
 from sqlmodel import select
 
@@ -18,6 +19,7 @@ from app.api.utils import (
     generate_logo,
     generate_password,
     get_team_quality,
+    get_team_score,
     is_answer_correct,
     validate_question_answer,
 )
@@ -30,7 +32,7 @@ templates = Jinja2Templates(directory="app/templates")
 templates.env.globals["now"] = datetime.now()
 
 
-@router.get("/", response_class=RedirectResponse, tags=["home"])
+@router.get("/", response_class=HTMLResponse, tags=["home"])
 async def home_page(request: Request, session: SessionDep, auth: AuthDep):
     # Get logo
     quality = get_team_quality(session, auth)
@@ -39,7 +41,7 @@ async def home_page(request: Request, session: SessionDep, auth: AuthDep):
     logo.save(bytes, format="PNG")
 
     # Get questions
-    questions = session.exec(select(Question)).all()
+    questions = session.exec(select(Question).order_by(text("Question.number"))).all()
     submissions = session.exec(
         select(Submission).where(Submission.team_id == auth.id)
     ).all()
@@ -302,6 +304,114 @@ async def leaderboard_page(
         request=request,
         name="leaderboard.html",
         context={"teams": template_teams, "team": auth},
+    )
+
+
+# TODO: Optimize function
+@router.get("/admin", tags=["admin"], response_class=HTMLResponse)
+async def admin_page(request: Request, session: SessionDep, auth: AdminDep):
+    questions = session.exec(select(Question).order_by(text("Question.number"))).all()
+    submissions = session.exec(
+        select(Submission).order_by(text("Submission.timestamp"))
+    ).all()
+    teams = session.exec(select(Team).order_by(text("Team.name"))).all()
+
+    # Team submissions table
+
+    @dataclass
+    class QuestionAnswer:
+        question: Question
+        submissions: int
+        correct: bool | None
+
+    @dataclass
+    class TeamAnswer:
+        team: Team
+        questions: list[QuestionAnswer]
+
+    team_answers: list[TeamAnswer] = []
+
+    for team in teams:
+        team_answer = TeamAnswer(team, [])
+
+        for question in questions:
+            question_submissions = [
+                s
+                for s in submissions
+                if s.team_id == team.id and s.question_id == question.id
+            ]
+            correct_submission = next(
+                (
+                    s
+                    for s in question_submissions
+                    if is_answer_correct(s.answer, question.solution)
+                ),
+                None,
+            )
+            team_answer.questions.append(
+                QuestionAnswer(
+                    question,
+                    len(question_submissions),
+                    True
+                    if correct_submission
+                    else None
+                    if len(question_submissions) == 0
+                    else False,
+                )
+            )
+
+        team_answers.append(team_answer)
+
+    # Scoreboard
+
+    @dataclass
+    class TeamScore:
+        team: Team
+        score: float
+
+    team_scores: list[TeamScore] = []
+
+    for team in teams:
+        team_scores.append(TeamScore(team, get_team_score(session, team)))
+
+    team_scores = sorted(team_scores, key=lambda x: x.score)
+
+    # All submissions table
+
+    @dataclass
+    class SubmissionPopulated:
+        submission: Submission
+        team: Team
+        question: Question
+        timestamp: str
+
+    submissions_populated: list[SubmissionPopulated] = []
+
+    for s in submissions:
+        team = next((t for t in teams if t.id == s.team_id), None)
+        if not team:
+            continue  # Shouldn't happen
+
+        question = next((q for q in questions if q.id == s.question_id), None)
+        if not question:
+            continue  # Shouldn't happen
+
+        submissions_populated.append(
+            SubmissionPopulated(
+                s, team, question, s.timestamp.strftime("%d-%m-%Y %H:%M:%S")
+            )
+        )
+
+    return templates.TemplateResponse(
+        request=request,
+        name="admin.html",
+        context={
+            "team": auth,
+            "answers": team_answers,
+            "questions": questions,
+            "scores": team_scores,
+            "submissions": submissions_populated,
+        },
     )
 
 

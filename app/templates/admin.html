@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}Admin{% endblock %}
+{% block content %}
+  <div class="admin-container">
+    <strong>Team submissions</strong>
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Team</th>
+          {% for q in questions %}
+            <th>{{ q.title }}</th>
+          {% endfor %}
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for a in answers %}
+          <tr>
+            <td>{{ a.team.name }}</td>
+            {% for q in a.questions %}
+              <td class="{% if q.correct == True %}solved{% elif q.correct == False %}unsolved{% endif %}">
+                {{ q.submissions }}
+              </td>
+            {% endfor %}
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <strong>Scoreboard</strong>
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Team</th>
+          <th>Score</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for s in scores %}
+          <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ s.team.name }}</td>
+            <td>{{ s.score }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <strong>All submissions</strong>
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Team</th>
+          <th>Timestamp</th>
+          <th>Question</th>
+          <th>Answer</th>
+        </tr>
+      </thead>
+      
+      <tbody>
+        {% for s in submissions %}
+          <tr>
+            <td>{{ s.team.name }}</td>
+            <td>{{ s.timestamp }}</td>
+            <td>{{ s.question.title }}</td>
+            <td>{{ s.submission.answer }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endblock %}
