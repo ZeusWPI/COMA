@@ -17,7 +17,7 @@ ENV UV_TOOL_BIN_DIR=/usr/local/bin
 WORKDIR /app
 
 # Install nodejs dependencies
-COPY ./package.json pnpm-lock.yaml ./
+COPY ./package.json package-lock.json ./
 RUN npm ci
 
 # Install python dependencies
