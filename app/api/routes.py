@@ -153,7 +153,20 @@ async def show_team(request: Request, session: SessionDep, id: int, auth: AdminD
     )
 
 
-@router.get("/admin/question", response_class=HTMLResponse, tags=["admin", "questions"])
+@router.get("/admin/question", response_class=HTMLResponse, tags=["admin", "question"])
+async def admin_question_page(request: Request, auth: AdminDep, session: SessionDep):
+    questions = session.exec(select(Question).order_by(text("Question.number"))).all()
+
+    return templates.TemplateResponse(
+        request=request,
+        name="question_admin.html",
+        context={"team": auth, "questions": questions},
+    )
+
+
+@router.get(
+    "/admin/question/create", response_class=HTMLResponse, tags=["admin", "questions"]
+)
 async def new_question(request: Request, auth: AdminDep):
     """
     Render the question creation page
@@ -189,7 +202,9 @@ async def update_question_page(
 
 
 @router.post(
-    "/admin/question", response_class=RedirectResponse, tags=["admin", "questions"]
+    "/admin/question/create",
+    response_class=RedirectResponse,
+    tags=["admin", "questions"],
 )
 async def create_question(
     session: SessionDep, auth: AdminDep, question_in: Annotated[QuestionCreate, Form()]
@@ -210,7 +225,7 @@ async def create_question(
             detail="question number already exists",
         )
 
-    return RedirectResponse(f"/admin/question/{question.id}")
+    return RedirectResponse(f"/admin/question/{question.id}", status_code=302)
 
 
 @router.post(
@@ -243,7 +258,7 @@ async def update_question(
     session.add(question)
     session.commit()
 
-    return RedirectResponse(f"/admin/question/{question.id}", status_code=302)
+    return RedirectResponse("/admin/question", status_code=302)
 
 
 @router.get("/question/{id}", response_class=HTMLResponse, tags=["question"])

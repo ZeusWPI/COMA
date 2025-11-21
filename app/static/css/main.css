@@ -3,6 +3,7 @@
 @import url("home.css");
 @import url("admin.css");
 @import url("team_admin.css");
+@import url("question_admin.css");
 
 body {
   background-color: #644296;

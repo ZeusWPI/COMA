@@ -1,0 +1,16 @@
+.question-admin-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.question-admin-table {
+  width: 100%;
+  /* table-layout: fixed; */
+}
+
+.question-admin-visible {
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.3rem;
+  font-size: 0.85rem;
+}

@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Admin{% endblock %}
+{% block content %}
+  <div class="question-admin-layout">
+    <button onclick="window.location='/admin/question/create'">Create</button>
+    <table class="question-admin-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Title</th>
+          <th>Description</th>
+          <th>Max Score</th>
+          <th>Solution</th>
+          <th>Visible</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for q in questions %}
+          <tr>
+            <td>{{ q.number }}</td>
+            <td>{{ q.title }}</td>
+            <td>{{ q.body }}</td>
+            <td>{{ q.max_score }}</td>
+            <td>{{ q.solution }}</td>
+            <td>
+              <span class="question-admin-visible">
+                {% if q.visible %}
+                  ✓
+                {% else %}
+                  ✗
+                {% endif %}
+              </span>
+            </td>
+            <td>
+              <div>
+                <button onclick="window.location='/question/{{q.id}}'" class="outline">👁️</button>
+                <button onclick="window.location='/admin/question/{{q.id}}'" class="outline">✏️</button>
+                <button class="outline">🗑️</button>
+              </div>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endblock %}
