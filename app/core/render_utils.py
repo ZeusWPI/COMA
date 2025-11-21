@@ -1,9 +1,16 @@
-"""Does things."""
+"""Render document types to other document types."""
+
+from typing import List, Tuple
 
 import pandoc
+from pandoc.types import Meta, Pandoc, Plain
 
 
-def render_md_to_html(md: str, math_renderer: str = "--mathml"):
+def render_md_to_html(
+    md: str,
+    inline: bool = False,
+    math_renderer: str = "--mathml",
+) -> str:
     """
     Render the markdown string `md` to html.
 
@@ -17,10 +24,12 @@ def render_md_to_html(md: str, math_renderer: str = "--mathml"):
     The default is "--mathml", which has no external dependencies, except for a
     somewhat modern browser.
     """
-    doc = pandoc.read(
+    doc: Tuple(Meta, List[Pandoc]) = pandoc.read(
         source=md,
         format="markdown",
     )
+    if inline:
+        doc[1][0] = Plain(*doc[1][0])
     html = pandoc.write(
         doc=doc,
         format="html",
