@@ -43,7 +43,7 @@ def render_md_to_html(md: str, inline: bool = False) -> str:
         format="html",
         options=[
             "--lua-filter=pandoc-filters/math2svg.lua",
-            "--mathml", # Fallback
+            "--mathml",  # Fallback
         ],
     )
     return html
