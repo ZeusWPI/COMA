@@ -31,7 +31,7 @@ from app.api.utils import (
     validate_question_answer,
 )
 from app.core.config import settings
-from app.core.render_md import render_md
+from app.core.render_utils import render_md
 
 router = APIRouter()
 
