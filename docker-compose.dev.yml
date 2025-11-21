@@ -3,6 +3,7 @@ services:
     build:
       context: .
       target: dev
+    restart: unless-stopped
     env_file: .docker-env-dev
     ports:
       - 127.0.0.1:8000:80
@@ -16,6 +17,7 @@ services:
 
   dev-db:
     image: docker.io/library/postgres:18
+    restart: unless-stopped
     env_file: .docker-env-dev
     ports:
       - 127.0.0.1:5432:5432
