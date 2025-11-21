@@ -48,7 +48,7 @@
 
 
 --  The full path to the tex2svg binary of the mathjax-node-cli package.
-local tex2svg = 'tex2svg'
+local tex2svg = 'node_modules/.bin/tex2svg'
 
 --  By default, DisplayMath is converted to SVG, whereas InlineMath is not.
 local display2svg = true
