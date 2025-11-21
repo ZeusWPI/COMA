@@ -31,7 +31,7 @@ from app.api.utils import (
     validate_question_answer,
 )
 from app.core.config import settings
-from app.core.render_utils import render_md
+from app.core.render_utils import render_md_to_html
 
 router = APIRouter()
 
@@ -285,7 +285,7 @@ async def show_question(id: int, session: SessionDep, auth: AuthDep, request: Re
         context={
             "team": auth,
             "question": question,
-            "render_md": render_md,
+            "render_md_to_html": render_md_to_html,
             "submissions": submissions,
         },
     )

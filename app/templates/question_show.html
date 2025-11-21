@@ -4,7 +4,7 @@
   <h1> {{question.title}} </h1>
   <h2> {{question.max_score}} </h2>
   
-  <p> {{ render_md(question.body)|safe }} </p>
+  <p> {{ render_md_to_html(question.body)|safe }} </p>
   
   <form method="POST" action="/question/{{question.id}}/submission">
     <fieldset>
