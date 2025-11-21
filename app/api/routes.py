@@ -22,6 +22,7 @@ from app.api.utils import (
     validate_question_answer,
 )
 from app.core.config import settings
+from app.core.render_md import render_md
 
 router = APIRouter()
 
@@ -223,6 +224,25 @@ async def update_question(
     session.commit()
 
     return RedirectResponse(f"/admin/question/{question.id}", status_code=302)
+
+
+@router.get("/question/{id}", response_class=HTMLResponse, tags=["questions"])
+async def show_question(id: int, session: SessionDep, auth: AuthDep, request: Request):
+    """
+    Return the detail page of a question with submission form
+    """
+    question = session.get(Question, id)
+
+    if question is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="question not found"
+        )
+
+    return templates.TemplateResponse(
+        request=request,
+        name="question_show.html",
+        context={"team": auth, "question": question, "render_md": render_md},
+    )
 
 
 @router.get("/login", tags=["auth"], response_class=HTMLResponse)
