@@ -8,9 +8,10 @@ services:
     ports:
       - 127.0.0.1:8000:80
     volumes:
-      - ./alembic/:/app/alembic/
       - ./alembic.ini:/app/alembic.ini
+      - ./alembic/:/app/alembic/
       - ./app/:/app/app/
+      - ./pandoc-filters:/app/pandoc-filters
       - ./scripts/:/app/scripts/
     depends_on:
       - dev-db
