@@ -41,7 +41,7 @@ from app.core.render_utils import render_html_to_pdf, render_md_to_html
 router = APIRouter()
 
 templates = Jinja2Templates(directory="app/templates")
-templates.env.globals["now"] = datetime.now()
+templates.env.globals["now"] = datetime.now
 
 
 @router.get("/", response_class=HTMLResponse, tags=["home"])
