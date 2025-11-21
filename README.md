@@ -14,6 +14,7 @@ Install all the dependencies with:
 
 ```console
 uv sync
+npm i
 ```
 
 Activate the virtual environment with:
