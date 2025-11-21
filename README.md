@@ -8,7 +8,7 @@ Computational Mathematics event of PRIME.
 
 The python dependencies are managed with [uv](https://docs.astral.sh/uv/) go there and install it.
 
-(If you have asdf, you can also run `asdf plugin add uv`, `asdf install`, and `asdf reshim` instead.)
+(If you have asdf, you can also run `sh .asdf-plugins`, `asdf install`, and `asdf reshim` instead.)
 
 Install all the dependencies with:
 
