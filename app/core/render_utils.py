@@ -1,10 +1,14 @@
 """Render document types to other document types."""
 
+import logging
 from typing import List, Tuple
 
 import pandoc
 import weasyprint
 from pandoc.types import Meta, Pandoc, Plain
+
+logging.getLogger("weasyprint").addHandler(logging._StderrHandler())
+logging.getLogger("weasyprint").setLevel(logging.INFO)
 
 
 def plumbum_call_with_log(self, args):

@@ -2,14 +2,88 @@
 <html lang="en">
   <head>
     <title>COMA Questions</title>
-    <link rel="stylesheet" href="app/static/css/pico.min.css" />
-    <link rel="stylesheet" href="app/static/css/main.css" />
-    <style>annotation{display: none;}</style>
+    <meta charset="utf-8">
+    <style>
+/*
+  See https://print-css.rocks/lessons.
+  Some of the material was applied here, see https://print-css.rocks/about#licence for credits.
+*/
+@page {
+  size: A4;
+  margin: 2cm;
+}
+
+/* Page numbering */
+@page {
+    counter-increment: page;
+}
+page-counter {
+    content: counter(page) "/" counter(pages);
+}
+
+/* Header/footer */
+@page {
+  @top-center    {content: element(top-center);}
+  @bottom-center {content: element(bottom-center);}
+}
+@page:left {
+  @bottom-left   {content: element(bottom-outside);}
+}
+@page:right {
+  @bottom-right  {content: element(bottom-outside);}
+}
+.header.center  {position: running(top-center);}
+.footer.center  {position: running(bottom-center);}
+.footer.outside {position: running(bottom-outside);}
+.header, .footer {
+  font-family: sans-serif, Noto Color Emoji;
+  font-size: .8em;
+}
+footer {
+  position: running(bottom-center);
+}
+
+.hsplit {
+    display: flex;
+    justify-content: space-between;
+}
+
+/* Questions */
+.score {
+}
+
+/* Images */
+img {
+  max-width: 100%;
+}
+aside {
+    padding: 0;
+    float: right;
+    width: 30%;
+}
+
+/* Math */
+p:has(span.math.display) {
+    text-align: center;
+}
+    </style>
   </head>
   <body>
+    <span class="header center">COMA Questions</span>
+    <page-counter class="footer outside"></page-counter>
+    <span class="footer center">Generated on {{now()}}</span>
+
     {% for q in sorted_visible_questions %}
-      <h2>{{q.number}}. {{render_md_to_html(q.title, inline=True)|safe}} ({{render_md_to_html("$" ~ q.max_score_display ~ "$", inline=True)|safe}})</h2>
-    {{render_md_to_html(q.body)|safe}}
+      <h2 class="hsplit">
+        <span>
+          {{q.number}}.
+          {{render_md_to_html(q.title, inline=True)|safe}}
+        </span>
+        <span>
+          ({{render_md_to_html("$" ~ q.max_score_display ~ "$", inline=True)|safe}} punten)
+        </span>
+      </h2>
+      {{render_md_to_html(q.body)|safe}}
     {% endfor %}
   </body>
 </html>
