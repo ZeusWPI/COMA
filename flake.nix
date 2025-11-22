@@ -16,9 +16,9 @@
   {
     devShell = mkShell {
       buildInputs = [
-      	pandoc
-	python313
-	python313Packages.uv
+        pandoc
+        python313
+        python313Packages.uv
       ];
     };
   });
