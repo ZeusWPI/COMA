@@ -9,7 +9,6 @@ import jwt
 from fastapi import APIRouter, Form, HTTPException, Request, status
 from fastapi.responses import (
     HTMLResponse,
-    PlainTextResponse,
     RedirectResponse,
     Response,
 )
@@ -327,6 +326,36 @@ async def create_submission(
     return RedirectResponse(f"/question/{id}", status_code=302)
 
 
+@router.post(
+    "/question/{question_id}/submission/{submission_id}",
+    response_class=RedirectResponse,
+    tags=["submission", "admin"],
+)
+async def delete_submission(
+    session: SessionDep, auth: AdminDep, question_id: int, submission_id: int
+):
+    """
+    Deletes A submission
+    """
+    question = session.get(Question, question_id)
+
+    if question is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="question not found"
+        )
+
+    submission = session.get(Submission, submission_id)
+
+    if submission is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="submission not found"
+        )
+
+    session.delete(submission)
+    session.commit()
+    return RedirectResponse("/admin", status_code=302)
+
+
 @router.get("/login", tags=["auth"], response_class=HTMLResponse)
 async def login_page(request: Request):
     """
@@ -454,7 +483,7 @@ async def admin_page(request: Request, session: SessionDep, auth: AdminDep):
     for team in teams:
         team_scores.append(TeamScore(team, get_team_score(session, team)))
 
-    team_scores = sorted(team_scores, key=lambda x: x.score)
+    team_scores = sorted(team_scores, key=lambda x: -x.score)
 
     # All submissions table
 
@@ -495,7 +524,7 @@ async def admin_page(request: Request, session: SessionDep, auth: AdminDep):
     )
 
 
-@router.get("/admin/teams.csv", tags=["admin"])
+@router.get("/admin/teams.csv", tags=["admin", "export"])
 async def teams_csv(request: Request, session: SessionDep, auth: AdminDep):
     """
     Return a CSV with the number of attempts of teams
@@ -519,10 +548,10 @@ async def teams_csv(request: Request, session: SessionDep, auth: AdminDep):
             row.append(str(len(submissions)))
         writer.writerow(row)
 
-    return PlainTextResponse(output.getvalue())
+    return Response(content=output.getvalue(), media_type="text/csv")
 
 
-@router.get("/admin/answers.csv", tags=["admin"])
+@router.get("/admin/answers.csv", tags=["admin", "export"])
 async def answers_csv(request: Request, session: SessionDep, auth: AdminDep):
     """
     Return a CSV with all answers
@@ -548,7 +577,7 @@ async def answers_csv(request: Request, session: SessionDep, auth: AdminDep):
             ]
         )
 
-    return PlainTextResponse(output.getvalue())
+    return Response(content=output.getvalue(), media_type="text/csv")
 
 
 @router.get("/questions-pdf", tags=["export"])
@@ -562,7 +591,6 @@ async def questions_pdf(session: SessionDep):
         sorted_visible_questions=sorted_visible_questions,
         render_md_to_html=render_md_to_html,
     )
-    # return HTMLResponse(html)
     pdf = render_html_to_pdf(html)
     return Response(
         content=pdf,

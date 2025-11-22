@@ -2,7 +2,36 @@
 {% block title %}Admin{% endblock %}
 {% block content %}
   <div class="admin-container">
-    <strong>Team submissions</strong>
+    <article>
+      <header><strong>Scoreboard</strong></header>
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Team</th>
+            <th>Score</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {% for s in scores %}
+            <tr>
+              <td>{{ loop.index }}</td>
+              <td>{{ s.team.name }}</td>
+              <td>{{ s.score }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </article>
+
+    <article>
+      <header>
+        <strong>
+          Team submissions - <a class="secondary" href="/admin/teams.csv">Export</a>
+        </strong>
+      </header>
+
     <table class="admin-table">
       <thead>
         <tr>
@@ -26,49 +55,42 @@
         {% endfor %}
       </tbody>
     </table>
+    </article>
 
-    <strong>Scoreboard</strong>
-    <table class="admin-table">
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Team</th>
-          <th>Score</th>
-        </tr>
-      </thead>
 
-      <tbody>
-        {% for s in scores %}
+    <article>
+      <header>
+        <strong>
+          Team submissions - <a class="secondary" href="/admin/answers.csv">Export</a>
+        </strong>
+      </header>
+      <table class="admin-table">
+        <thead>
           <tr>
-            <td>{{ loop.index }}</td>
-            <td>{{ s.team.name }}</td>
-            <td>{{ s.score }}</td>
+            <th>Team</th>
+            <th>Timestamp</th>
+            <th>Question</th>
+            <th>Answer</th>
+            <th>Delete</th>
           </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+        </thead>
 
-    <strong>All submissions</strong>
-    <table class="admin-table">
-      <thead>
-        <tr>
-          <th>Team</th>
-          <th>Timestamp</th>
-          <th>Question</th>
-          <th>Answer</th>
-        </tr>
-      </thead>
-
-      <tbody>
-        {% for s in submissions %}
-          <tr>
-            <td>{{ s.team.name }}</td>
-            <td>{{ s.timestamp }}</td>
-            <td>{{ s.question.title }}</td>
-            <td>{{ s.submission.answer }}</td>
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+        <tbody>
+          {% for s in submissions %}
+            <tr>
+              <td>{{ s.team.name }}</td>
+              <td>{{ s.timestamp }}</td>
+              <td>{{ s.question.title }}</td>
+              <td>{{ s.submission.answer }}</td>
+              <td>
+                <form class="confirm" method="POST" action="/question/{{s.question.id}}/submission/{{s.submission.id}}">
+                  <input class="outline delete" type="submit" value="X"/>
+                </form>
+              </a>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </article>
   </div>
 {% endblock %}

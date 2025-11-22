@@ -29,3 +29,9 @@ main {
 footer {
   min-height: 50px;
 }
+
+.delete {
+  color: #ef2f15;
+  border: none;
+  text-decoration: none;
+}

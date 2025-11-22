@@ -19,3 +19,13 @@
     </footer>
 </body>
 </html>
+
+<script>
+document.querySelectorAll('.confirm').forEach(form => {
+  form.addEventListener('submit', function(e) {
+    if (!confirm('Are you sure?')) {
+      e.preventDefault();
+    }
+  });
+});
+</script>

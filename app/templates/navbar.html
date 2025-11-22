@@ -11,19 +11,21 @@
     <li><a href="/leaderboard">Leaderboard</a></li>
     {% if team %}
       <li><a href="/">Questions</a></li>
-      <li>
-        <details class="dropdown">
-          <summary>{{team.name}}</summary>
-          <ul role="list">
-            {% if team.admin %}
-              <li><a href="/admin/team">Teams</a></li>
-              <li><a href="/admin/question">Questions</a></li>
-              <li><a href="/admin">Admin</a></li>
-            {% endif %}
-            <li><a href="/logout">Logout</a></li>
-          </ul>
-        </details>
-      </li>
+      {% if team.admin %}
+        <li>
+          <details class="dropdown">
+            <summary>Management</summary>
+            <ul role="list">
+                <li><a href="/admin">Overview</a></li>
+                <li><a href="/admin/team">Teams</a></li>
+                <li><a href="/admin/question">Questions</a></li>
+              <li><a href="/logout">Logout</a></li>
+            </ul>
+          </details>
+        </li>
+      {% else %}
+        <li><a href="/logout">Logout</a></li>
+      {% endif %}
     {% else %}
       <li><a href="/login">Login</a></li>
     {% endif %}
