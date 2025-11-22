@@ -40,7 +40,7 @@ class QuestionBase(SQLModel):
     # should match max_score as much as possiblee
     max_score_display: str
     number: int = Field(unique=True)
-    visible: bool = Field(default=True)
+    visible: bool = Field(default=False)
 
 
 # Shared properties

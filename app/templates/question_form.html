@@ -88,7 +88,8 @@
         name="visible"
         role="switch"
         type="checkbox"
-        {% if question and question.visible %}
+        value="true"
+        {% if question %}
           {% if question.visible %}
             checked
           {% endif %}

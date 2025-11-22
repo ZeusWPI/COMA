@@ -248,7 +248,7 @@ async def create_question(
             detail="question number already exists",
         )
 
-    return RedirectResponse(f"/admin/question/{question.id}", status_code=302)
+    return RedirectResponse("/admin/question", status_code=302)
 
 
 @router.post(
