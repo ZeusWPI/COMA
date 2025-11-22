@@ -13,7 +13,7 @@ from fastapi.responses import (
     Response,
 )
 from fastapi.templating import Jinja2Templates
-from sqlalchemy import desc, text
+from sqlalchemy import delete, desc, text
 from sqlalchemy.exc import IntegrityError
 from sqlmodel import select
 
@@ -157,6 +157,25 @@ async def show_team(request: Request, session: SessionDep, id: int, auth: AdminD
     )
 
 
+@router.post(
+    "/admin/team/{id}/delete", response_class=RedirectResponse, tags=["admin", "team"]
+)
+async def delete_team(request: Request, session: SessionDep, id: int, auth: AdminDep):
+    """
+    Delete A team
+    """
+    team = session.get(Team, id)
+    if team is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="team not found"
+        )
+
+    session.delete(team)
+    session.commit()
+
+    return RedirectResponse("/admin/team", status_code=302)
+
+
 @router.get("/admin/question", response_class=HTMLResponse, tags=["admin", "question"])
 async def admin_question_page(request: Request, auth: AdminDep, session: SessionDep):
     questions = session.exec(select(Question).order_by(text("Question.number"))).all()
@@ -169,7 +188,7 @@ async def admin_question_page(request: Request, auth: AdminDep, session: Session
 
 
 @router.get(
-    "/admin/question/create", response_class=HTMLResponse, tags=["admin", "questions"]
+    "/admin/question/create", response_class=HTMLResponse, tags=["admin", "question"]
 )
 async def new_question(request: Request, auth: AdminDep):
     """
@@ -181,7 +200,7 @@ async def new_question(request: Request, auth: AdminDep):
 
 
 @router.get(
-    "/admin/question/{id}", response_class=HTMLResponse, tags=["admin", "questions"]
+    "/admin/question/{id}", response_class=HTMLResponse, tags=["admin", "question"]
 )
 async def update_question_page(
     session: SessionDep, request: Request, auth: AdminDep, id: int
@@ -208,7 +227,7 @@ async def update_question_page(
 @router.post(
     "/admin/question/create",
     response_class=RedirectResponse,
-    tags=["admin", "questions"],
+    tags=["admin", "question"],
 )
 async def create_question(
     session: SessionDep, auth: AdminDep, question_in: Annotated[QuestionCreate, Form()]
@@ -233,7 +252,7 @@ async def create_question(
 
 
 @router.post(
-    "/admin/question/{id}", response_class=RedirectResponse, tags=["admin", "questions"]
+    "/admin/question/{id}", response_class=RedirectResponse, tags=["admin", "question"]
 )
 async def update_question(
     session: SessionDep,
@@ -260,6 +279,50 @@ async def update_question(
         setattr(question, key, value)
 
     session.add(question)
+    session.commit()
+
+    return RedirectResponse("/admin/question", status_code=302)
+
+
+@router.post(
+    "/admin/question/{id}/delete",
+    response_class=RedirectResponse,
+    tags=["admin", "question"],
+)
+async def delete_question(session: SessionDep, auth: AdminDep, id: int):
+    """
+    Remove this question
+    """
+    question = session.get(Question, id)
+
+    if question is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="question not found"
+        )
+
+    session.delete(question)
+    session.commit()
+
+    return RedirectResponse("/admin/question", status_code=302)
+
+
+@router.post(
+    "/admin/question/{id}/reset",
+    response_class=RedirectResponse,
+    tags=["admin", "question"],
+)
+async def reset_question(session: SessionDep, auth: AdminDep, id: int):
+    """
+    Delete all submissions for this question
+    """
+    question = session.get(Question, id)
+
+    if question is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="question not found"
+        )
+
+    session.exec(delete(Submission).where(Submission.question_id == question.id))
     session.commit()
 
     return RedirectResponse("/admin/question", status_code=302)
@@ -327,7 +390,7 @@ async def create_submission(
 
 
 @router.post(
-    "/question/{question_id}/submission/{submission_id}",
+    "/question/{question_id}/submission/{submission_id}/delete",
     response_class=RedirectResponse,
     tags=["submission", "admin"],
 )

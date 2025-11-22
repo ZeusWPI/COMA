@@ -25,19 +25,22 @@
             <td>{{ q.max_score }}</td>
             <td>{{ q.solution }}</td>
             <td>
-              <span class="question-admin-visible">
                 {% if q.visible %}
-                  ✓
+                  <span class="question-admin-visible">YES</span>
                 {% else %}
-                  ✗
+                  <span class="question-admin-not-visible">NO</span>
                 {% endif %}
               </span>
             </td>
             <td>
-              <div>
-                <button onclick="window.location='/question/{{q.id}}'" class="outline">👁️</button>
-                <button onclick="window.location='/admin/question/{{q.id}}'" class="outline">✏️</button>
-                <button class="outline">🗑️</button>
+              <div class="grid">
+                <a type="button" href="/admin/question/{{q.id}}" class="outline" data-tooltip="Edit">✏️</a>
+                <form class="confirm" method="POST" action="/admin/question/{{q.id}}/reset">
+                  <button type="submit" href="/admin/question/{{q.id}}/reset" class="outline" data-tooltip="Delete all submissions for this question" >↺</a>
+                </form>
+                <form class="confirm" method="POST" action="/admin/question/{{q.id}}/delete">
+                  <button type="submit" class="delete outline" data-tooltip="Delete">🗑️</button>
+                </form>
               </div>
             </td>
           </tr>

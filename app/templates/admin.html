@@ -83,8 +83,8 @@
               <td>{{ s.question.title }}</td>
               <td>{{ s.submission.answer }}</td>
               <td>
-                <form class="confirm" method="POST" action="/question/{{s.question.id}}/submission/{{s.submission.id}}">
-                  <input class="outline delete" type="submit" value="X"/>
+                <form class="confirm" method="POST" action="/question/{{s.question.id}}/submission/{{s.submission.id}}/delete">
+                  <button class="delete outline" data-tooltip="Delete" type="submit"/>🗑️</button>
                 </form>
               </a>
             </tr>

@@ -12,5 +12,13 @@
 .question-admin-visible {
   padding: 0.25rem 0.5rem;
   border-radius: 0.3rem;
-  font-size: 0.85rem;
+  color: #87d82b;
+  font-weight: bold;
+}
+
+.question-admin-not-visible {
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.3rem;
+  color: #f93220;
+  font-weight: bold;
 }

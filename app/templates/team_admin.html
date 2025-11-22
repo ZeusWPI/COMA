@@ -26,10 +26,11 @@
               </span>
             </td>
             <td>
-              <div>
-                <button onclick="window.location='/admin/team/{{t.id}}'" class="outline">👁️</button>
-                <button class="outline">✏️</button>
-                <button class="outline">🗑️</button>
+              <div class="grid">
+                <a type="button" class="outline" href="/admin/team/{{t.id}}" data-tooltip="Show password" >👁️</a>
+                <form class="confirm" method="POST" action="/admin/team/{{t.id}}/delete">
+                  <button class="delete outline" data-tooltip="Delete" type="submit"/>🗑️</button>
+                </form>
               </div>
             </td>
           </tr>

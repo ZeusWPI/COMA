@@ -56,8 +56,8 @@ class SubmissionCreate(SubmissionBase):
 # Database model
 class Submission(SubmissionBase, table=True):
     id: int = Field(default=None, primary_key=True)
-    team_id: int = Field(foreign_key="team.id")
-    question_id: int = Field(foreign_key="question.id")
+    team_id: int = Field(foreign_key="team.id", ondelete="CASCADE")
+    question_id: int = Field(foreign_key="question.id", ondelete="CASCADE")
     timestamp: datetime = Field(default_factory=datetime.now)
 
 

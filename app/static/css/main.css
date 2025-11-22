@@ -30,8 +30,13 @@ footer {
   min-height: 50px;
 }
 
+
 .delete {
   color: #ef2f15;
-  border: none;
+  border-color: #ef2f15;
   text-decoration: none;
+}
+
+table a, table button {
+  border:none !important;
 }
