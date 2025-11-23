@@ -111,11 +111,11 @@ docker compose -f docker-compose.dev.yml exec dev-backend alembic upgrade head
 To create an admin user in the dev database, run:
 
 ```console
-podman compose -f docker-compose.dev.yml exec dev-db psql coma coma -c"INSERT INTO team (name, password, admin) VALUES ('admin', 'admin', true);"
+docker compose -f docker-compose.dev.yml exec dev-db psql coma coma -c"INSERT INTO team (name, password, admin) VALUES ('admin', 'admin', true);"
 ```
 
 To add some questions, run:
 
 ```console
-podman compose -f docker-compose.dev.yml exec dev-db psql coma coma <app/mock/2024_questions.sql
+docker compose -f docker-compose.dev.yml exec dev-db psql coma coma <app/mock/2024_questions.sql
 ```
