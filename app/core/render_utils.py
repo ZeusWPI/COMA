@@ -55,6 +55,7 @@ def render_md_to_html(md: str, inline: bool = False) -> str:
     return html
 
 
+@lru_cache(maxsize=8)
 def render_html_to_pdf(html: str) -> bytes:
     """Render the html string `html` to an in-memory pdf file."""
     html_doc = weasyprint.HTML(string=html)
