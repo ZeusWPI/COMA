@@ -3,9 +3,8 @@
 {% block content %}
   <div class="home-root">
     <div class="home-layout">
-      <div class="home-logo">
-        <strong>Team progress logo</strong>
-      </div>
+      <h1>Team: {{team.name }} </h1>
+
 
       <table class="home-questions-table">
         <thead>
@@ -34,6 +33,8 @@
           {% endfor %}
         </tbody>
       </table>
+
+      <a type="button" target="_blank" href="/questions-pdf">Export all questions to PDF</a>
     </div>
   </div>
 {% endblock %}

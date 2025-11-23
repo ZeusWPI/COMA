@@ -32,6 +32,10 @@
   cursor: pointer;
 }
 
+.home-questions-table td:hover {
+  background-color: #11141b;
+}
+
 .home-questions-table th:nth-child(2),
 .home-questions-table td:nth-child(2) {
   width: 60%;
