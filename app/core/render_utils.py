@@ -1,6 +1,7 @@
 """Render document types to other document types."""
 
 import logging
+from functools import lru_cache
 from typing import List, Tuple
 
 import pandoc
@@ -24,6 +25,7 @@ def plumbum_call_with_log(self, args):
 pandoc.plumbum.machines.LocalCommand.__call__ = plumbum_call_with_log
 
 
+@lru_cache(maxsize=256)
 def render_md_to_html(md: str, inline: bool = False) -> str:
     """
     Render the markdown string `md` to html.
