@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 {% block title %}Leaderboard{% endblock %}
 {% block content %}
-<div class="grid">
+<div class="leaderboard">
   {% for team in teams %}
-  <div>
-    {{ team.name }}
-    <img style="border: 3px solid" src="data:image/png;base64, {{team.img}}" />
-  </div>
+    <div class="leaderboard-cell">
+      {{ team.name }}
+      <img class="logo" src="data:image/png;base64, {{team.img}}" />
+    </div>
   {% endfor %}
 </div>
 {% endblock %}

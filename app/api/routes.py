@@ -1,4 +1,3 @@
-import base64
 import csv
 import io
 from dataclasses import dataclass
@@ -27,11 +26,14 @@ from app.api.models import (
     TeamCreate,
 )
 from app.api.utils import (
+    encoded_logo,
     generate_logo,
     generate_password,
+    get_question_score,
     get_team_quality,
     get_team_score,
     is_answer_correct,
+    question_score_left,
     validate_question_answer,
 )
 from app.core.config import settings
@@ -46,12 +48,6 @@ templates.env.globals["render_md_to_html"] = render_md_to_html
 
 @router.get("/", response_class=HTMLResponse, tags=["home"])
 async def home_page(request: Request, session: SessionDep, auth: AuthDep):
-    # Get logo
-    quality = get_team_quality(session, auth)
-    logo = generate_logo(quality)
-    bytes = io.BytesIO()
-    logo.save(bytes, format="PNG")
-
     # Get questions
     questions = session.exec(select(Question).order_by(text("Question.number"))).all()
     submissions = session.exec(
@@ -63,25 +59,37 @@ async def home_page(request: Request, session: SessionDep, auth: AuthDep):
         question: Question
         submissions: int
         correct: bool
+        logo: str
 
     team_questions: list[TeamQuestion] = []
 
     for question in questions:
         question_submissions = [s for s in submissions if s.question_id == question.id]
-        correct_submission = next(
-            (
-                s
-                for s in question_submissions
-                if is_answer_correct(s.answer, question.solution)
-            ),
-            None,
+        solved = bool(
+            next(
+                (
+                    s
+                    for s in question_submissions
+                    if is_answer_correct(s.answer, question.solution)
+                ),
+                None,
+            )
         )
+
+        if solved:
+            quality = (
+                get_question_score(auth, question, question_submissions)
+                / question.max_score
+            )
+        else:
+            quality = (
+                question_score_left(question, question_submissions) / question.max_score
+            )
+        logo = generate_logo(quality, (19, 23, 31))
 
         team_questions.append(
             TeamQuestion(
-                question,
-                len(question_submissions),
-                bool(correct_submission),
+                question, len(question_submissions), solved, encoded_logo(logo)
             )
         )
 
@@ -91,7 +99,6 @@ async def home_page(request: Request, session: SessionDep, auth: AuthDep):
         context={
             "team": auth,
             "questions": team_questions,
-            "img": base64.b64encode(bytes.getvalue()).decode(),
         },
     )
 
@@ -484,11 +491,7 @@ async def leaderboard_page(
     for team in teams:
         quality = get_team_quality(session, team)
         logo = generate_logo(quality)
-        bytes = io.BytesIO()
-        logo.save(bytes, format="PNG")
-        template_teams.append(
-            {"name": team.name, "img": base64.b64encode(bytes.getvalue()).decode()}
-        )
+        template_teams.append({"name": team.name, "img": encoded_logo(logo)})
     return templates.TemplateResponse(
         request=request,
         name="leaderboard.html",
@@ -561,7 +564,7 @@ async def admin_page(request: Request, session: SessionDep, auth: AdminDep):
     team_scores: list[TeamScore] = []
 
     for team in teams:
-        team_scores.append(TeamScore(team, get_team_score(session, team)))
+        team_scores.append(TeamScore(team, get_team_score(session, team, questions)))
 
     team_scores = sorted(team_scores, key=lambda x: -x.score)
 

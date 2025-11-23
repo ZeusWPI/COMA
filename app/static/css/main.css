@@ -5,6 +5,7 @@
 @import url("team_admin.css");
 @import url("question_admin.css");
 @import url("question_show.css");
+@import url("leaderboard.css");
 
 body {
   background-color: #644296;

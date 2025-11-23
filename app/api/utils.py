@@ -1,7 +1,10 @@
+import base64
+import io
 import random
 import re
 import secrets
 import textwrap
+from typing import List
 
 from fastapi import HTTPException, status
 from PIL import Image
@@ -15,38 +18,49 @@ def generate_password() -> str:
     return secrets.token_urlsafe(10)
 
 
-def get_team_score(session: SessionDep, team: Team) -> float:
+def get_question_score(
+    team: Team, question: Question, question_submissions: List[Submission]
+) -> float:
+    for submission in question_submissions:
+        assert submission.question_id == question.id
+        if is_answer_correct(submission.answer, question.solution):
+            return 0.9 ** (len(question_submissions) - 1) * question.max_score
+
+    return 0.0
+
+
+def get_team_score(session: SessionDep, team: Team, questions: List[Question]) -> float:
     score = 0
-    questions = session.exec(select(Question)).all()
     all_submissions = session.exec(
         select(Submission).where(Submission.team_id == team.id)
-    )
+    ).all()
 
     for question in questions:
         submissions = [s for s in all_submissions if s.question_id == question.id]
-        # TODO: Add penalty for wrong answers and only consider last answer
-        for submission in submissions:
-            if is_answer_correct(submission.answer, question.solution):
-                score += question.max_score
-                break
+        score += get_question_score(team, question, submissions)
 
     return score
 
 
 def get_team_quality(session: SessionDep, team: Team) -> float:
-    score = get_team_score(session, team)
-
     questions = session.exec(select(Question)).all()
+    score = get_team_score(session, team, questions)
+
     max_score = sum(x.max_score for x in questions)
 
-    quality = 1
     if max_score != 0:
-        quality = score / max_score
+        return score / max_score
+    else:
+        return 1
 
-    return quality
+
+def question_score_left(
+    question: Question, question_submissions: List[Submission]
+) -> float:
+    return 0.9 ** len(question_submissions) * question.max_score
 
 
-def generate_logo(quality: float) -> Image.Image:
+def generate_logo(quality: float, background=(100, 66, 150)) -> Image.Image:
     img = Image.open("app/static/images/prime.webp")
     width, height = img.size
     random.seed(1)
@@ -55,8 +69,14 @@ def generate_logo(quality: float) -> Image.Image:
     for x in range(width):
         for y in range(height):
             if random.random() > quality:
-                pixels[x, y] = (100, 66, 150)
+                pixels[x, y] = background
     return img
+
+
+def encoded_logo(logo: Image.Image) -> str:
+    bytes = io.BytesIO()
+    logo.save(bytes, format="PNG")
+    return base64.b64encode(bytes.getvalue()).decode()
 
 
 def is_answer_correct(a: str, b: str) -> bool:

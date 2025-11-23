@@ -5,7 +5,6 @@
     <div class="home-layout">
       <div class="home-logo">
         <strong>Team progress logo</strong>
-        <img class="home-logo" src="data:image/png;base64,{{ img }}" />
       </div>
 
       <table class="home-questions-table">
@@ -13,7 +12,7 @@
           <tr>
             <th>#</th>
             <th>Question</th>
-            <th>Submissions</th>
+            <th>Score Value</th>
             <th>Status</th>
           </tr>
         </thead>
@@ -23,7 +22,7 @@
             <tr onclick="window.location='/question/{{q.question.id}}'">
               <td>{{ q.question.number }}</td>
               <td>{{ render_md_to_html(q.question.title, inline=True)|safe }}</td>
-              <td>{{ q.submissions }}</td>
+              <td><img class="home-logo" src="data:image/png;base64,{{ q.logo }}" /></td>
               <td>
                 {% if q.correct %}
                   <span class="home-status home-solved">✓</span>
