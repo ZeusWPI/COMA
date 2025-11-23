@@ -4,7 +4,7 @@
   <div class="admin-container">
     <article>
       <header><strong>Scoreboard</strong></header>
-      <table class="admin-table">
+      <table class="admin-table center">
         <thead>
           <tr>
             <th>#</th>
@@ -32,65 +32,69 @@
         </strong>
       </header>
 
-    <table class="admin-table">
-      <thead>
-        <tr>
-          <th>Team</th>
-          {% for q in questions %}
-            <th>{{ q.title }}</th>
-          {% endfor %}
-        </tr>
-      </thead>
 
-      <tbody>
-        {% for a in answers %}
-          <tr>
-            <td>{{ a.team.name }}</td>
-            {% for q in a.questions %}
-              <td class="{% if q.correct == True %}solved{% elif q.correct == False %}unsolved{% endif %}">
-                {{ q.submissions }}
-              </td>
+      <div class="overflow-auto">
+        <table class="admin-table center">
+          <thead>
+            <tr>
+              <th>Team</th>
+              {% for q in questions %}
+                <th>{{ q.number }}</th>
+              {% endfor %}
+            </tr>
+          </thead>
+
+          <tbody>
+            {% for a in answers %}
+              <tr>
+                <td>{{ a.team.name }}</td>
+                {% for q in a.questions %}
+                  <td class="{% if q.correct == True %}solved{% elif q.correct == False %}unsolved{% endif %}">
+                    {{ q.submissions }}
+                  </td>
+                {% endfor %}
+              </tr>
             {% endfor %}
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+          </tbody>
+        </table>
+      </div>
     </article>
 
 
     <article>
       <header>
         <strong>
-          Team submissions - <a class="secondary" href="/admin/answers.csv">Export</a>
+          All submissions - <a class="secondary" href="/admin/answers.csv">Export</a>
         </strong>
       </header>
-      <table class="admin-table">
-        <thead>
-          <tr>
-            <th>Team</th>
-            <th>Timestamp</th>
-            <th>Question</th>
-            <th>Answer</th>
-            <th>Delete</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {% for s in submissions %}
+      <div class="overflow-auto">
+        <table class="admin-table">
+          <thead>
             <tr>
-              <td>{{ s.team.name }}</td>
-              <td>{{ s.timestamp }}</td>
-              <td>{{ s.question.title }}</td>
-              <td>{{ s.submission.answer }}</td>
-              <td>
-                <form class="confirm" method="POST" action="/question/{{s.question.id}}/submission/{{s.submission.id}}/delete">
-                  <button class="delete outline" data-tooltip="Delete" type="submit"/>🗑️</button>
-                </form>
-              </a>
+              <th>Delete</th>
+              <th>Team</th>
+              <th>Timestamp</th>
+              <th>Question</th>
+              <th>Answer</th>
             </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+          </thead>
+
+          <tbody>
+            {% for s in submissions %}
+              <tr>
+                <td>
+                  <form class="confirm" method="POST" action="/question/{{s.question.id}}/submission/{{s.submission.id}}/delete">
+                    <button class="delete outline" data-tooltip="Delete" type="submit"/>🗑️</button>
+                  </form>
+                </th>
+                <td>{{ s.team.name }}</td>
+                <td>{{ s.timestamp }}</td>
+                <td>{{ s.question.number }}</td>
+                <td>{{ s.submission.answer }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
     </article>
   </div>
 {% endblock %}

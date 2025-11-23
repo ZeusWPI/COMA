@@ -4,6 +4,7 @@
 @import url("admin.css");
 @import url("team_admin.css");
 @import url("question_admin.css");
+@import url("question_show.css");
 
 body {
   background-color: #644296;
@@ -39,4 +40,9 @@ footer {
 
 table a, table button {
   border:none !important;
+}
+
+.hsplit {
+    display: flex;
+    justify-content: space-between;
 }

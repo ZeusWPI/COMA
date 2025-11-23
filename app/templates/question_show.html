@@ -1,38 +1,68 @@
 {% extends "base.html" %}
 {% block title %}Question{% endblock %}
 {% block content %}
-  <h1> {{question.title}} </h1>
-  <h2> {{question.max_score}} </h2>
 
-  <p> {{ render_md_to_html(question.body)|safe }} </p>
+  <article>
+    <header class="hsplit" >
+        <h1> {{question.number}}. {{ render_md_to_html(question.title, inline=True)|safe }} </h1>
+        <h1> ({{ render_md_to_html("$" + question.max_score_display + "$", inline=True)|safe }}) </h1>
+    </header>
 
-  <form method="POST" action="/question/{{question.id}}/submission">
-    <fieldset>
-      <label>
-        Submission
-        <input
-          type="text"
-          name="answer"
-          placeholder="your answer..."
-          required
-        />
-      </label>
-    </fieldset>
-      <input
-        type="submit"
-        value="Create"
-      />
-  </form>
+    <p> {{ render_md_to_html(question.body)|safe }} </p>
 
-  <h2> Previous Submissions </h2>
+    <footer>
+      {% if solved %}
+        <button class="button-solved">Solved</button>
+      {% else %}
+        <form method="POST" action="/question/{{question.id}}/submission">
+          <fieldset>
+            <label>
+              Submission
+              <input
+                type="text"
+                name="answer"
+                placeholder="your answer..."
+                required
+              />
+            </label>
+          </fieldset>
+            <input
+              type="submit"
+              value="Create"
+            />
+        </form>
+      {% endif %}
+    </footer>
+  </article>
 
-  {% if submissions %}
-    <ul>
-      {% for submission in submissions %}
-        <li> {{ submission.answer }} </li>
-      {% endfor %}
-    </ul>
-  {% else %}
-    <p><b> No submissions yet </b></p>
-  {% endif %}
+  <article>
+    <header>
+      <h2> Previous Submissions </h2>
+    </header>
+
+    {% if submissions %}
+      <div class="overflow-auto">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Timestamp</th>
+              <th>Answer</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {% for submission in submissions %}
+              <tr>
+                <td>{{ submission.timestamp }} </td>
+                <td class={{"solved" if submission.correct}}>{{ submission.answer }} </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p><b> No submissions yet </b></p>
+    {% endif %}
+
+  </article>
 {% endblock %}

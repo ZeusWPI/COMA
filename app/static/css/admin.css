@@ -18,7 +18,7 @@
 }
 
 .admin-table td {
-  text-align: center;
+  /* text-align: center; */
   padding: 0.25rem 0.5rem;
 }
 
@@ -33,6 +33,10 @@
 }
 
 .admin-table th {
-  text-align: center;
+  /* text-align: center; */
   padding: 0.25rem 0.5rem;
+}
+
+.center th, .center td {
+  text-align: center;
 }

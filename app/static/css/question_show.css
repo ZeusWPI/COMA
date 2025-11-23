@@ -1,0 +1,64 @@
+button.button-solved {
+  background-color: #d4f8dd !important;
+  color: #145c2d !important;
+  width: 100%;
+}
+
+button.button-solved::before,
+button.button-solved::after{
+  content:"";
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:6px;
+  height:10px;
+  border-radius:2px;
+  background:currentColor;
+  transform-origin:center;
+  opacity:0;
+  pointer-events:none;
+}
+
+button.button-solved::before{
+  color: #ff4d6d;
+  box-shadow:
+    -6px 10px #ff4d6d,
+     8px 8px  #ffd166,
+    -14px 4px #6be7a5,
+     12px 2px #6ec8ff,
+    -18px -2px #c792ea,
+      6px -6px #ffb3c6,
+     20px -8px #ffe7a6,
+    -22px -12px #b9f1d4,
+      2px -18px #bfe7ff,
+    -8px -22px #ddb3f0,
+     14px -24px #ffd6b3,
+    -12px -30px #fef08a;
+}
+
+@keyframes confetti-up {
+  0%{
+    transform: translate(-50%,-50%) translateY(0) translateX(0) rotate(0) scaleY(1);
+    opacity:1;
+  }
+  30%{
+    transform: translate(-50%,-50%) translateY(-80px) translateX(-20px) rotate(180deg) scaleY(.95);
+    opacity:1;
+  }
+  60%{
+    transform: translate(-50%,-50%) translateY(-140px) translateX(12px) rotate(420deg) scaleY(.9);
+    opacity:0.9;
+  }
+  100%{
+    transform: translate(-50%,-50%) translateY(-220px) translateX(40px) rotate(720deg) scaleY(.85);
+    opacity:0;
+  }
+}
+
+button.button-solved:hover::before{
+  animation: confetti-up 1200ms cubic-bezier(.15,.75,.35,1) forwards;
+  opacity:1;
+}
+
+button.button-solved:hover{ transform: translateY(-4px); }
+

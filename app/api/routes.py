@@ -41,6 +41,7 @@ router = APIRouter()
 
 templates = Jinja2Templates(directory="app/templates")
 templates.env.globals["now"] = datetime.now
+templates.env.globals["render_md_to_html"] = render_md_to_html
 
 
 @router.get("/", response_class=HTMLResponse, tags=["home"])
@@ -341,10 +342,26 @@ async def show_question(id: int, session: SessionDep, auth: AuthDep, request: Re
         )
 
     submissions = session.exec(
-        select(Submission).where(
-            Submission.team_id == auth.id, Submission.question_id == question.id
-        )
+        select(Submission)
+        .where(Submission.team_id == auth.id, Submission.question_id == question.id)
+        .order_by(desc(Submission.timestamp))
     ).all()
+
+    @dataclass
+    class SubmissionCorrect:
+        timestamp: datetime
+        answer: str
+        correct: bool
+
+    submissions = list(
+        map(
+            lambda s: SubmissionCorrect(
+                s.timestamp, s.answer, is_answer_correct(s.answer, question.solution)
+            ),
+            submissions,
+        )
+    )
+    solved = any(map(lambda s: s.correct, submissions))
 
     return templates.TemplateResponse(
         request=request,
@@ -352,8 +369,8 @@ async def show_question(id: int, session: SessionDep, auth: AuthDep, request: Re
         context={
             "team": auth,
             "question": question,
-            "render_md_to_html": render_md_to_html,
             "submissions": submissions,
+            "solved": solved,
         },
     )
 

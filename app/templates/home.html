@@ -11,6 +11,7 @@
       <table class="home-questions-table">
         <thead>
           <tr>
+            <th>#</th>
             <th>Question</th>
             <th>Submissions</th>
             <th>Status</th>
@@ -20,7 +21,8 @@
         <tbody>
           {% for q in questions %}
             <tr onclick="window.location='/question/{{q.question.id}}'">
-              <td>{{ q.question.title }}</td>
+              <td>{{ q.question.number }}</td>
+              <td>{{ render_md_to_html(q.question.title, inline=True)|safe }}</td>
               <td>{{ q.submissions }}</td>
               <td>
                 {% if q.correct %}
