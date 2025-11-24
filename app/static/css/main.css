@@ -1,11 +1,11 @@
 @import url("navbar.css");
 @import url("footer.css");
-@import url("home.css");
-@import url("admin.css");
-@import url("team_admin.css");
-@import url("question_admin.css");
-@import url("question_show.css");
-@import url("leaderboard.css");
+@import url("pages/admin.css");
+@import url("pages/admin_team.css");
+@import url("pages/home.css");
+@import url("pages/leaderboard.css");
+@import url("pages/question_admin.css");
+@import url("pages/question_show.css");
 
 body {
   background-color: #644296;

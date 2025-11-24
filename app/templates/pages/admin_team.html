@@ -1,9 +1,9 @@
 {% extends "page.html" %}
 {% block title %}Admin{% endblock %}
 {% block content %}
-  <div class="team-admin-layout">
+  <div class="admin-team-layout">
     <button onclick="window.location='/admin/team/create'">Create</button>
-    <table class="team-admin-table">
+    <table class="admin-team-table">
       <thead>
         <tr>
           <th>Name</th>
@@ -17,7 +17,7 @@
           <tr>
             <td>{{ t.name }}</td>
             <td>
-              <span class="team-admin-admin">
+              <span class="admin-team-is-admin">
                 {% if t.admin %}
                   ✓
                 {% else %}

@@ -1,9 +1,9 @@
 {% extends "page.html" %}
 {% block title %}Admin{% endblock %}
 {% block content %}
-  <div class="question-admin-layout">
+  <div class="admin-question-layout">
     <button onclick="window.location='/admin/question/create'">Create</button>
-    <table class="question-admin-table">
+    <table class="admin-question-table">
       <thead>
         <tr>
           <th>#</th>
@@ -24,9 +24,9 @@
             <td>{{ q.solution }}</td>
             <td>
                 {% if q.visible %}
-                  <span class="question-admin-visible">YES</span>
+                  <span class="admin-question-visible">YES</span>
                 {% else %}
-                  <span class="question-admin-not-visible">NO</span>
+                  <span class="admin-question-not-visible">NO</span>
                 {% endif %}
               </span>
             </td>

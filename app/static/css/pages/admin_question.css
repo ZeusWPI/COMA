@@ -1,22 +1,22 @@
-.question-admin-layout {
+.admin-question-layout {
   display: flex;
   flex-direction: column;
   gap: 2rem;
 }
 
-.question-admin-table {
+.admin-question-table {
   width: 100%;
   table-layout: fixed;
 }
 
-.question-admin-visible {
+.admin-question-visible {
   padding: 0.25rem 0.5rem;
   border-radius: 0.3rem;
   color: #87d82b;
   font-weight: bold;
 }
 
-.question-admin-not-visible {
+.admin-question-not-visible {
   padding: 0.25rem 0.5rem;
   border-radius: 0.3rem;
   color: #f93220;
