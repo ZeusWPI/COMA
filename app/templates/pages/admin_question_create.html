@@ -1,0 +1,11 @@
+{% extends "page.html" %}
+{% block title %}Question Create{% endblock %}
+{% block content %}
+<form method="POST" action="/admin/question/create" >
+    {% include "pages/admin_question_form.html" %}
+    <input
+      type="submit"
+      value="Create"
+    />
+  </form>
+{% endblock %}

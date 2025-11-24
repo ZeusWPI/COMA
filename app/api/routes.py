@@ -2,7 +2,7 @@ import csv
 import io
 from dataclasses import dataclass
 from datetime import datetime, timezone
-from typing import Annotated
+from typing import Annotated, Optional
 
 import jwt
 from fastapi import APIRouter, Form, HTTPException, Request, status
@@ -176,7 +176,12 @@ async def home_page(request: Request, session: SessionDep, auth: AuthDep):
     tags=["question"],
 )
 async def question_show_page(
-    id: int, session: SessionDep, auth: AuthDep, request: Request
+    id: int,
+    session: SessionDep,
+    auth: AuthDep,
+    request: Request,
+    error: Optional[str] = None,
+    submission: Optional[str] = None,
 ):
     """Return the detail page of a question with submission form."""
     question = session.get(Question, id)
@@ -216,6 +221,8 @@ async def question_show_page(
             "question": question,
             "submissions": submissions,
             "solved": solved,
+            "error": error,
+            "submission": submission,
         },
     )
 
@@ -239,8 +246,16 @@ async def question_create_submission(
             status_code=status.HTTP_404_NOT_FOUND, detail="question not found"
         )
 
+    answer = validate_question_answer(submission_in.answer)
+
+    if answer is None:
+        return RedirectResponse(
+            f"/question/{id}?error=Solution has invalid format&submission={submission_in.answer}",
+            status_code=302,
+        )
+
     submission = Submission(
-        answer=validate_question_answer(submission_in.answer),
+        answer=answer,
         team_id=auth.id,
         question_id=question.id,
     )
@@ -537,7 +552,7 @@ async def admin_question_page(request: Request, auth: AdminDep, session: Session
 async def admin_question_create_page(request: Request, auth: AdminDep):
     """Render the question creation page."""
     return templates.TemplateResponse(
-        request=request, name="pages/admin_question_form.html", context={"team": auth}
+        request=request, name="pages/admin_question_create.html", context={"team": auth}
     )
 
 
@@ -561,7 +576,7 @@ async def admin_question_show_page(
 
     return templates.TemplateResponse(
         request=request,
-        name="pages/admin_question_form.html",
+        name="pages/admin_question_update.html",
         context={"question": question_public, "team": auth},
     )
 
@@ -572,12 +587,26 @@ async def admin_question_show_page(
     tags=["admin", "question"],
 )
 async def admin_question_create(
-    session: SessionDep, auth: AdminDep, question_in: Annotated[QuestionCreate, Form()]
+    request: Request,
+    session: SessionDep,
+    auth: AdminDep,
+    question_in: Annotated[QuestionCreate, Form()],
 ):
     """Create the new question and redirect to admin home page."""
-    question = Question.model_validate(
-        question_in, update={"solution": validate_question_answer(question_in.solution)}
-    )
+    answer = validate_question_answer(question_in.solution)
+
+    if answer is None:
+        return templates.TemplateResponse(
+            request=request,
+            name="pages/admin_question_create.html",
+            context={
+                "question": question_in,
+                "team": auth,
+                "error": "Solution does not have expected format",
+            },
+        )
+
+    question = Question.model_validate(question_in, update={"solution": answer})
 
     try:
         session.add(question)
@@ -593,10 +622,10 @@ async def admin_question_create(
 
 @router.post(
     path="/admin/question/{id}",
-    response_class=RedirectResponse,
     tags=["admin", "question"],
 )
 async def admin_question_update(
+    request: Request,
     session: SessionDep,
     auth: AdminDep,
     id: int,
@@ -613,7 +642,20 @@ async def admin_question_update(
     update_data = question_in.model_dump(exclude_unset=True)
 
     if "solution" in update_data:
-        update_data["solution"] = validate_question_answer(update_data["solution"])
+        answer = validate_question_answer(update_data["solution"])
+
+        if answer is None:
+            return templates.TemplateResponse(
+                request=request,
+                name="pages/admin_question_update.html",
+                context={
+                    "question": question,
+                    "team": auth,
+                    "error": "Solution does not have expected format",
+                },
+            )
+
+        update_data["solution"] = answer
 
     for key, value in update_data.items():
         setattr(question, key, value)

@@ -22,19 +22,29 @@
                 type="text"
                 name="answer"
                 placeholder="your answer..."
+                {% if submission %}
+                  value="{{ submission }}"
+                {% endif %}
                 required
               />
+              {% if error %}
+                <p class="error">Error: {{ error }}</p>
+              {% endif %}
             </label>
           </fieldset>
+
+
             <input
               type="submit"
               value="Create"
             />
         </form>
       {% endif %}
+
+
+
     </footer>
   </article>
-
   <article>
     <header>
       <h2> Previous Submissions </h2>

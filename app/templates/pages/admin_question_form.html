@@ -1,8 +1,9 @@
-{% extends "page.html" %}
-{% block title %}Question Create{% endblock %}
-{% block content %}
-<form method="POST" action={{ "/admin/question/" ~ question.id if question else "/admin/question/create" }} >
-    <fieldset>
+
+{% if error %}
+  <p class="error">{{ error }}</p>
+{% endif %}
+
+<fieldset>
     <label>
       Title
       <input
@@ -98,19 +99,4 @@
         {% endif %}
       />
     </label>
-
-    </fieldset>
-
-    {% if question %}
-      <input
-        type="submit"
-        value="Update"
-      />
-    {% else %}
-      <input
-        type="submit"
-        value="Create"
-      />
-    {% endif %}
-  </form>
-{% endblock %}
+</fieldset>

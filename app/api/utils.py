@@ -6,7 +6,6 @@ import secrets
 import textwrap
 from typing import List
 
-from fastapi import HTTPException, status
 from PIL import Image
 from sqlmodel import select
 
@@ -92,13 +91,10 @@ def is_answer_correct(a: str, b: str) -> bool:
     return False
 
 
-def validate_question_answer(input: str) -> str:
+def validate_question_answer(input: str) -> str | None:
     """Strips all whitespaces, replace , to . and validates if input is a correct number format"""
     transformed = input.strip().replace(",", ".")
     if not bool(re.fullmatch(r"[0-9.]+", transformed)) or transformed.count(".") > 1:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="Given Solution does not have correct format",
-        )
+        return None
 
     return transformed
