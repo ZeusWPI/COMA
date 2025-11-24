@@ -47,3 +47,8 @@ table a, table button {
     display: flex;
     justify-content: space-between;
 }
+
+aside {
+    float: right;
+    width: 30%;
+}
