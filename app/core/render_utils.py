@@ -8,17 +8,11 @@ import pandoc
 import weasyprint
 from pandoc.types import Meta, Pandoc, Plain
 
-logging.getLogger("weasyprint").addHandler(logging._StderrHandler())
-logging.getLogger("weasyprint").setLevel(logging.INFO)
-
 
 def plumbum_call_with_log(self, args):
     """Wrap LocalCommand() for logging pandoc stdout/stderr."""
     res = self.run(args)
-    print(f"{self.executable} {' '.join(args)}:")
-    print(f"  status: {res[0]}")
-    print(f"  stdout: {res[1]}")
-    print(f"  stderr: {res[2]}")
+    print(f"{self.executable} {' '.join(args)}: {res}")
     return res[1]
 
 
@@ -53,6 +47,10 @@ def render_md_to_html(md: str, inline: bool = False) -> str:
         ],
     )
     return html
+
+
+logging.getLogger("weasyprint").addHandler(logging._StderrHandler())
+logging.getLogger("weasyprint").setLevel(logging.INFO)
 
 
 @lru_cache(maxsize=8)
