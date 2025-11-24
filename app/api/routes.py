@@ -281,7 +281,7 @@ async def question_delete_submission(
     path="/questions-pdf",
     tags=["export"],
 )
-async def questions_pdf(session: SessionDep, auth: AuthDep):
+async def questions_pdf(session: SessionDep, auth: AuthDep, request: Request):
     """Return a printable pdf file with all questions."""
     sorted_visible_questions = session.exec(
         select(Question).where(Question.visible).order_by(Question.number)
@@ -291,6 +291,8 @@ async def questions_pdf(session: SessionDep, auth: AuthDep):
         sorted_visible_questions=sorted_visible_questions,
         render_md_to_html=render_md_to_html,
     )
+    if "html" in request.query_params:
+        return HTMLResponse(content=html)
     pdf = render_html_to_pdf(html)
     return Response(
         content=pdf,
