@@ -1,4 +1,8 @@
 {% extends "page.html" %}
+{% block head %}
+  {{ super() }}
+  <meta http-equiv="refresh" content="3" />
+{% endblock %}
 {% block title %}Leaderboard{% endblock %}
 {% block content %}
 <div class="leaderboard">
