@@ -56,7 +56,9 @@ async def leaderboard_page(
 ):
     """Render the leaderboard page."""
     template_teams = []
-    teams = session.exec(select(Team)).all()
+    teams = session.exec(
+        select(Team).where(Team.admin == False)  # noqa: E712
+    ).all()
     for team in teams:
         quality = get_team_quality(session, team)
         logo = generate_logo(quality)
