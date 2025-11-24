@@ -46,9 +46,13 @@ templates.env.globals["now"] = datetime.now
 templates.env.globals["render_md_to_html"] = render_md_to_html
 
 
-@router.get("/", response_class=HTMLResponse, tags=["home"])
+@router.get(
+    path="/",
+    response_class=HTMLResponse,
+    tags=["home"],
+)
 async def home_page(request: Request, session: SessionDep, auth: AuthDep):
-    # Get questions
+    """Return home page with questions."""
     questions = session.exec(select(Question).order_by(text("Question.number"))).all()
     submissions = session.exec(
         select(Submission).where(Submission.team_id == auth.id)
@@ -103,8 +107,13 @@ async def home_page(request: Request, session: SessionDep, auth: AuthDep):
     )
 
 
-@router.get("/admin/team", response_class=HTMLResponse, tags=["admin", "team"])
+@router.get(
+    path="/admin/team",
+    response_class=HTMLResponse,
+    tags=["admin", "team"],
+)
 async def admin_team_page(request: Request, auth: AdminDep, session: SessionDep):
+    """Return admin teams overview page."""
     teams = session.exec(select(Team)).all()
 
     return templates.TemplateResponse(
@@ -114,25 +123,27 @@ async def admin_team_page(request: Request, auth: AdminDep, session: SessionDep)
     )
 
 
-@router.get("/admin/team/create", response_class=HTMLResponse, tags=["admin", "team"])
+@router.get(
+    path="/admin/team/create",
+    response_class=HTMLResponse,
+    tags=["admin", "team"],
+)
 async def admin_team_create_page(request: Request, auth: AdminDep):
-    """
-    Return page for new team creation
-    """
+    """Return page for new team creation."""
     return templates.TemplateResponse(
         request=request, name="pages/admin_team_create.html", context={"team": auth}
     )
 
 
 @router.post(
-    "/admin/team/create", response_class=RedirectResponse, tags=["admin", "team"]
+    path="/admin/team/create",
+    response_class=RedirectResponse,
+    tags=["admin", "team"],
 )
 async def admin_team_create(
     session: SessionDep, team_in: Annotated[TeamCreate, Form()], auth: AdminDep
 ):
-    """
-    Create a new team and returns generated password
-    """
+    """Create a new team and returns generated password."""
     password = generate_password()
     team = Team.model_validate(
         team_in,
@@ -151,13 +162,15 @@ async def admin_team_create(
     return RedirectResponse(f"/admin/team/{team.id}", status_code=302)
 
 
-@router.get("/admin/team/{id}", response_class=HTMLResponse, tags=["admin"])
+@router.get(
+    path="/admin/team/{id}",
+    response_class=HTMLResponse,
+    tags=["admin"],
+)
 async def admin_team_show_page(
     request: Request, session: SessionDep, id: int, auth: AdminDep
 ):
-    """
-    Return detail page of team, only admins have access
-    """
+    """Return detail page of team, only admins have access."""
     team = session.get(Team, id)
     if team is None:
         raise HTTPException(
@@ -172,14 +185,14 @@ async def admin_team_show_page(
 
 
 @router.post(
-    "/admin/team/{id}/delete", response_class=RedirectResponse, tags=["admin", "team"]
+    path="/admin/team/{id}/delete",
+    response_class=RedirectResponse,
+    tags=["admin", "team"],
 )
 async def admin_team_delete(
     request: Request, session: SessionDep, id: int, auth: AdminDep
 ):
-    """
-    Delete A team
-    """
+    """Delete A team."""
     team = session.get(Team, id)
     if team is None:
         raise HTTPException(
@@ -192,8 +205,13 @@ async def admin_team_delete(
     return RedirectResponse("/admin/team", status_code=302)
 
 
-@router.get("/admin/question", response_class=HTMLResponse, tags=["admin", "question"])
+@router.get(
+    path="/admin/question",
+    response_class=HTMLResponse,
+    tags=["admin", "question"],
+)
 async def admin_question_page(request: Request, auth: AdminDep, session: SessionDep):
+    """Return admin questions overview page."""
     questions = session.exec(select(Question).order_by(text("Question.number"))).all()
 
     return templates.TemplateResponse(
@@ -204,26 +222,26 @@ async def admin_question_page(request: Request, auth: AdminDep, session: Session
 
 
 @router.get(
-    "/admin/question/create", response_class=HTMLResponse, tags=["admin", "question"]
+    path="/admin/question/create",
+    response_class=HTMLResponse,
+    tags=["admin", "question"],
 )
 async def admin_question_create_page(request: Request, auth: AdminDep):
-    """
-    Render the question creation page
-    """
+    """Render the question creation page."""
     return templates.TemplateResponse(
         request=request, name="pages/admin_question_form.html", context={"team": auth}
     )
 
 
 @router.get(
-    "/admin/question/{id}", response_class=HTMLResponse, tags=["admin", "question"]
+    path="/admin/question/{id}",
+    response_class=HTMLResponse,
+    tags=["admin", "question"],
 )
 async def admin_question_show_page(
     session: SessionDep, request: Request, auth: AdminDep, id: int
 ):
-    """
-    Render the question form page for updating
-    """
+    """Render the question form page for updating."""
     question = session.get(Question, id)
 
     if question is None:
@@ -241,16 +259,14 @@ async def admin_question_show_page(
 
 
 @router.post(
-    "/admin/question/create",
+    path="/admin/question/create",
     response_class=RedirectResponse,
     tags=["admin", "question"],
 )
 async def admin_question_create(
     session: SessionDep, auth: AdminDep, question_in: Annotated[QuestionCreate, Form()]
 ):
-    """
-    create the new question and redirect to admin home page
-    """
+    """Create the new question and redirect to admin home page."""
     question = Question.model_validate(
         question_in, update={"solution": validate_question_answer(question_in.solution)}
     )
@@ -268,7 +284,9 @@ async def admin_question_create(
 
 
 @router.post(
-    "/admin/question/{id}", response_class=RedirectResponse, tags=["admin", "question"]
+    path="/admin/question/{id}",
+    response_class=RedirectResponse,
+    tags=["admin", "question"],
 )
 async def admin_question_update(
     session: SessionDep,
@@ -276,9 +294,7 @@ async def admin_question_update(
     id: int,
     question_in: Annotated[QuestionCreate, Form()],
 ):
-    """
-    create the new question and redirect to admin home page
-    """
+    """Create the new question and redirect to admin home page."""
     question = session.get(Question, id)
 
     if question is None:
@@ -301,14 +317,12 @@ async def admin_question_update(
 
 
 @router.post(
-    "/admin/question/{id}/delete",
+    path="/admin/question/{id}/delete",
     response_class=RedirectResponse,
     tags=["admin", "question"],
 )
 async def admin_question_delete(session: SessionDep, auth: AdminDep, id: int):
-    """
-    Remove this question
-    """
+    """Remove this question."""
     question = session.get(Question, id)
 
     if question is None:
@@ -323,14 +337,12 @@ async def admin_question_delete(session: SessionDep, auth: AdminDep, id: int):
 
 
 @router.post(
-    "/admin/question/{id}/reset",
+    path="/admin/question/{id}/reset",
     response_class=RedirectResponse,
     tags=["admin", "question"],
 )
 async def admin_question_reset(session: SessionDep, auth: AdminDep, id: int):
-    """
-    Delete all submissions for this question
-    """
+    """Delete all submissions for this question."""
     question = session.get(Question, id)
 
     if question is None:
@@ -344,13 +356,15 @@ async def admin_question_reset(session: SessionDep, auth: AdminDep, id: int):
     return RedirectResponse("/admin/question", status_code=302)
 
 
-@router.get("/question/{id}", response_class=HTMLResponse, tags=["question"])
+@router.get(
+    path="/question/{id}",
+    response_class=HTMLResponse,
+    tags=["question"],
+)
 async def question_show_page(
     id: int, session: SessionDep, auth: AuthDep, request: Request
 ):
-    """
-    Return the detail page of a question with submission form
-    """
+    """Return the detail page of a question with submission form."""
     question = session.get(Question, id)
 
     if question is None:
@@ -393,7 +407,9 @@ async def question_show_page(
 
 
 @router.post(
-    "/question/{id}/submission", response_class=RedirectResponse, tags=["submission"]
+    path="/question/{id}/submission",
+    response_class=RedirectResponse,
+    tags=["submission"],
 )
 async def question_create_submission(
     session: SessionDep,
@@ -401,9 +417,7 @@ async def question_create_submission(
     id: int,
     submission_in: Annotated[SubmissionCreate, Form()],
 ):
-    """
-    Create a new submission
-    """
+    """Create a new submission."""
     question = session.get(Question, id)
 
     if question is None:
@@ -424,16 +438,14 @@ async def question_create_submission(
 
 
 @router.post(
-    "/question/{question_id}/submission/{submission_id}/delete",
+    path="/question/{question_id}/submission/{submission_id}/delete",
     response_class=RedirectResponse,
     tags=["submission", "admin"],
 )
 async def question_delete_submission(
     session: SessionDep, auth: AdminDep, question_id: int, submission_id: int
 ):
-    """
-    Deletes A submission
-    """
+    """Deletes A submission."""
     question = session.get(Question, question_id)
 
     if question is None:
@@ -453,21 +465,24 @@ async def question_delete_submission(
     return RedirectResponse("/admin", status_code=302)
 
 
-@router.get("/login", tags=["auth"], response_class=HTMLResponse)
+@router.get(
+    path="/login",
+    response_class=HTMLResponse,
+    tags=["auth"],
+)
 async def login_page(request: Request):
-    """
-    Render the login page
-    """
+    """Render the login page."""
     return templates.TemplateResponse(request=request, name="pages/login.html")
 
 
-@router.post("/login", tags=["auth"])
+@router.post(
+    path="/login",
+    tags=["auth"],
+)
 async def login(
     session: SessionDep, name: Annotated[str, Form()], password: Annotated[str, Form()]
 ):
-    """
-    Log in and create a JWT
-    """
+    """Log in and create a JWT."""
     team = session.exec(
         select(Team).where(Team.name == name, Team.password == password)
     ).first()
@@ -489,13 +504,15 @@ async def login(
     return response
 
 
-@router.get("/leaderboard", tags=["leaderboard"], response_class=HTMLResponse)
+@router.get(
+    path="/leaderboard",
+    response_class=HTMLResponse,
+    tags=["leaderboard"],
+)
 async def leaderboard_page(
     session: SessionDep, request: Request, auth: AuthOptionalDep
 ):
-    """
-    Render the leaderboard page
-    """
+    """Render the leaderboard page."""
     template_teams = []
     teams = session.exec(select(Team)).all()
     for team in teams:
@@ -510,8 +527,13 @@ async def leaderboard_page(
 
 
 # TODO: Optimize function
-@router.get("/admin", tags=["admin"], response_class=HTMLResponse)
+@router.get(
+    path="/admin",
+    response_class=HTMLResponse,
+    tags=["admin"],
+)
 async def admin_page(request: Request, session: SessionDep, auth: AdminDep):
+    """Return admin overview page."""
     questions = session.exec(select(Question).order_by(text("Question.number"))).all()
     submissions = session.exec(
         select(Submission).order_by(desc(text("Submission.timestamp")))
@@ -617,11 +639,12 @@ async def admin_page(request: Request, session: SessionDep, auth: AdminDep):
     )
 
 
-@router.get("/admin/teams.csv", tags=["admin", "export"])
+@router.get(
+    path="/admin/teams.csv",
+    tags=["admin", "export"],
+)
 async def admin_teams_csv(request: Request, session: SessionDep, auth: AdminDep):
-    """
-    Return a CSV with the number of attempts of teams
-    """
+    """Return a CSV with the number of attempts of teams."""
     teams = session.exec(select(Team)).all()
     questions = session.exec(select(Question)).all()
     output = io.StringIO()
@@ -644,11 +667,12 @@ async def admin_teams_csv(request: Request, session: SessionDep, auth: AdminDep)
     return Response(content=output.getvalue(), media_type="text/csv")
 
 
-@router.get("/admin/answers.csv", tags=["admin", "export"])
+@router.get(
+    path="/admin/answers.csv",
+    tags=["admin", "export"],
+)
 async def admin_answers_csv(request: Request, session: SessionDep, auth: AdminDep):
-    """
-    Return a CSV with all answers
-    """
+    """Return a CSV with all answers."""
     submissions = session.exec(select(Submission)).all()
     output = io.StringIO()
     writer = csv.writer(output)
@@ -673,7 +697,10 @@ async def admin_answers_csv(request: Request, session: SessionDep, auth: AdminDe
     return Response(content=output.getvalue(), media_type="text/csv")
 
 
-@router.get("/questions-pdf", tags=["export"])
+@router.get(
+    path="/questions-pdf",
+    tags=["export"],
+)
 async def questions_pdf(session: SessionDep):
     """Return a printable pdf file with all questions."""
     sorted_visible_questions = session.exec(
