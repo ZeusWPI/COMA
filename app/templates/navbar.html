@@ -12,17 +12,15 @@
     {% if team %}
       <li><a href="/">Questions</a></li>
       {% if team.admin %}
-        <li>
-          <details class="dropdown">
-            <summary>Management</summary>
-            <ul role="list">
-                <li><a href="/admin">Overview</a></li>
-                <li><a href="/admin/team">Teams</a></li>
-                <li><a href="/admin/question">Questions</a></li>
-              <li><a href="/logout">Logout</a></li>
-            </ul>
-          </details>
-        </li>
+        <details class="dropdown">
+          <summary>Management</summary>
+          <ul role="list">
+              <li><a href="/admin">Overview</a></li>
+              <li><a href="/admin/team">Teams</a></li>
+              <li><a href="/admin/question">Questions</a></li>
+            <li><a href="/logout">Logout</a></li>
+          </ul>
+        </details>
       {% else %}
         <li><a href="/logout">Logout</a></li>
       {% endif %}

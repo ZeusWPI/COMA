@@ -19,3 +19,10 @@ nav a.nav-brand img {
   top: 0px;
   z-index: 20;
 }
+
+/* Re-apply the Pico CSS `nav li` rule to `nav details`. */
+nav details {
+  display: inline-block;
+  margin: 0;
+  padding: var(--pico-nav-element-spacing-vertical) var(--pico-nav-element-spacing-horizontal);
+}
