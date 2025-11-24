@@ -47,6 +47,67 @@ templates.env.globals["render_md_to_html"] = render_md_to_html
 
 
 @router.get(
+    path="/leaderboard",
+    response_class=HTMLResponse,
+    tags=["leaderboard"],
+)
+async def leaderboard_page(
+    session: SessionDep, request: Request, auth: AuthOptionalDep
+):
+    """Render the leaderboard page."""
+    template_teams = []
+    teams = session.exec(select(Team)).all()
+    for team in teams:
+        quality = get_team_quality(session, team)
+        logo = generate_logo(quality)
+        template_teams.append({"name": team.name, "img": encoded_logo(logo)})
+    return templates.TemplateResponse(
+        request=request,
+        name="pages/leaderboard.html",
+        context={"teams": template_teams, "team": auth},
+    )
+
+
+@router.get(
+    path="/login",
+    response_class=HTMLResponse,
+    tags=["auth"],
+)
+async def login_page(request: Request):
+    """Render the login page."""
+    return templates.TemplateResponse(request=request, name="pages/login.html")
+
+
+@router.post(
+    path="/login",
+    tags=["auth"],
+)
+async def login(
+    session: SessionDep, name: Annotated[str, Form()], password: Annotated[str, Form()]
+):
+    """Log in and create a JWT."""
+    team = session.exec(
+        select(Team).where(Team.name == name, Team.password == password)
+    ).first()
+    if team is None:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Invalid credentials"
+        )
+    team_jwt = jwt.encode(
+        payload={
+            "id": team.id,
+            "exp": datetime.now(tz=timezone.utc).timestamp()
+            + settings.JWT_EXPIRE_MINUTES * 60,
+        },
+        key=settings.JWT_SECRET_KEY,
+        algorithm=settings.JWT_ALGORITHM,
+    )
+    response = RedirectResponse("/", status_code=302)
+    response.set_cookie(key="auth_jwt", value=team_jwt)
+    return response
+
+
+@router.get(
     path="/",
     response_class=HTMLResponse,
     tags=["home"],
@@ -103,6 +164,249 @@ async def home_page(request: Request, session: SessionDep, auth: AuthDep):
         context={
             "team": auth,
             "questions": team_questions,
+        },
+    )
+
+
+@router.get(
+    path="/question/{id}",
+    response_class=HTMLResponse,
+    tags=["question"],
+)
+async def question_show_page(
+    id: int, session: SessionDep, auth: AuthDep, request: Request
+):
+    """Return the detail page of a question with submission form."""
+    question = session.get(Question, id)
+
+    if question is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="question not found"
+        )
+
+    submissions = session.exec(
+        select(Submission)
+        .where(Submission.team_id == auth.id, Submission.question_id == question.id)
+        .order_by(desc(Submission.timestamp))
+    ).all()
+
+    @dataclass
+    class SubmissionCorrect:
+        timestamp: datetime
+        answer: str
+        correct: bool
+
+    submissions = list(
+        map(
+            lambda s: SubmissionCorrect(
+                s.timestamp, s.answer, is_answer_correct(s.answer, question.solution)
+            ),
+            submissions,
+        )
+    )
+    solved = any(map(lambda s: s.correct, submissions))
+
+    return templates.TemplateResponse(
+        request=request,
+        name="pages/question_show.html",
+        context={
+            "team": auth,
+            "question": question,
+            "submissions": submissions,
+            "solved": solved,
+        },
+    )
+
+
+@router.post(
+    path="/question/{id}/submission",
+    response_class=RedirectResponse,
+    tags=["submission"],
+)
+async def question_create_submission(
+    session: SessionDep,
+    auth: AuthDep,
+    id: int,
+    submission_in: Annotated[SubmissionCreate, Form()],
+):
+    """Create a new submission."""
+    question = session.get(Question, id)
+
+    if question is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="question not found"
+        )
+
+    submission = Submission(
+        answer=validate_question_answer(submission_in.answer),
+        team_id=auth.id,
+        question_id=question.id,
+    )
+
+    session.add(submission)
+    session.commit()
+
+    return RedirectResponse(f"/question/{id}", status_code=302)
+
+
+@router.post(
+    path="/question/{question_id}/submission/{submission_id}/delete",
+    response_class=RedirectResponse,
+    tags=["submission", "admin"],
+)
+async def question_delete_submission(
+    session: SessionDep, auth: AdminDep, question_id: int, submission_id: int
+):
+    """Delete a submission."""
+    question = session.get(Question, question_id)
+
+    if question is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="question not found"
+        )
+
+    submission = session.get(Submission, submission_id)
+
+    if submission is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="submission not found"
+        )
+
+    session.delete(submission)
+    session.commit()
+    return RedirectResponse("/admin", status_code=302)
+
+
+@router.get(
+    path="/questions-pdf",
+    tags=["export"],
+)
+async def questions_pdf(session: SessionDep):
+    """Return a printable pdf file with all questions."""
+    sorted_visible_questions = session.exec(
+        select(Question).where(Question.visible).order_by(Question.number)
+    ).all()
+    html_template = templates.get_template("questions_pdf.html")
+    html = html_template.render(
+        sorted_visible_questions=sorted_visible_questions,
+        render_md_to_html=render_md_to_html,
+    )
+    pdf = render_html_to_pdf(html)
+    return Response(
+        content=pdf,
+        media_type="application/pdf",
+    )
+
+
+# TODO: Optimize function
+@router.get(
+    path="/admin",
+    response_class=HTMLResponse,
+    tags=["admin"],
+)
+async def admin_page(request: Request, session: SessionDep, auth: AdminDep):
+    """Return admin overview page."""
+    questions = session.exec(select(Question).order_by(text("Question.number"))).all()
+    submissions = session.exec(
+        select(Submission).order_by(desc(text("Submission.timestamp")))
+    ).all()
+    teams = session.exec(select(Team).order_by(text("Team.name"))).all()
+
+    # Team submissions table
+
+    @dataclass
+    class QuestionAnswer:
+        question: Question
+        submissions: int
+        correct: bool | None
+
+    @dataclass
+    class TeamAnswer:
+        team: Team
+        questions: list[QuestionAnswer]
+
+    team_answers: list[TeamAnswer] = []
+
+    for team in teams:
+        team_answer = TeamAnswer(team, [])
+
+        for question in questions:
+            question_submissions = [
+                s
+                for s in submissions
+                if s.team_id == team.id and s.question_id == question.id
+            ]
+            correct_submission = next(
+                (
+                    s
+                    for s in question_submissions
+                    if is_answer_correct(s.answer, question.solution)
+                ),
+                None,
+            )
+            team_answer.questions.append(
+                QuestionAnswer(
+                    question,
+                    len(question_submissions),
+                    True
+                    if correct_submission
+                    else None
+                    if len(question_submissions) == 0
+                    else False,
+                )
+            )
+
+        team_answers.append(team_answer)
+
+    # Scoreboard
+
+    @dataclass
+    class TeamScore:
+        team: Team
+        score: float
+
+    team_scores: list[TeamScore] = []
+
+    for team in teams:
+        team_scores.append(TeamScore(team, get_team_score(session, team, questions)))
+
+    team_scores = sorted(team_scores, key=lambda x: -x.score)
+
+    # All submissions table
+
+    @dataclass
+    class SubmissionPopulated:
+        submission: Submission
+        team: Team
+        question: Question
+        timestamp: str
+
+    submissions_populated: list[SubmissionPopulated] = []
+
+    for s in submissions:
+        team = next((t for t in teams if t.id == s.team_id), None)
+        if not team:
+            continue  # Shouldn't happen
+
+        question = next((q for q in questions if q.id == s.question_id), None)
+        if not question:
+            continue  # Shouldn't happen
+
+        submissions_populated.append(
+            SubmissionPopulated(
+                s, team, question, s.timestamp.strftime("%d-%m-%Y %H:%M:%S")
+            )
+        )
+
+    return templates.TemplateResponse(
+        request=request,
+        name="pages/admin.html",
+        context={
+            "team": auth,
+            "answers": team_answers,
+            "questions": questions,
+            "scores": team_scores,
+            "submissions": submissions_populated,
         },
     )
 
@@ -357,289 +661,6 @@ async def admin_question_reset(session: SessionDep, auth: AdminDep, id: int):
 
 
 @router.get(
-    path="/question/{id}",
-    response_class=HTMLResponse,
-    tags=["question"],
-)
-async def question_show_page(
-    id: int, session: SessionDep, auth: AuthDep, request: Request
-):
-    """Return the detail page of a question with submission form."""
-    question = session.get(Question, id)
-
-    if question is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="question not found"
-        )
-
-    submissions = session.exec(
-        select(Submission)
-        .where(Submission.team_id == auth.id, Submission.question_id == question.id)
-        .order_by(desc(Submission.timestamp))
-    ).all()
-
-    @dataclass
-    class SubmissionCorrect:
-        timestamp: datetime
-        answer: str
-        correct: bool
-
-    submissions = list(
-        map(
-            lambda s: SubmissionCorrect(
-                s.timestamp, s.answer, is_answer_correct(s.answer, question.solution)
-            ),
-            submissions,
-        )
-    )
-    solved = any(map(lambda s: s.correct, submissions))
-
-    return templates.TemplateResponse(
-        request=request,
-        name="pages/question_show.html",
-        context={
-            "team": auth,
-            "question": question,
-            "submissions": submissions,
-            "solved": solved,
-        },
-    )
-
-
-@router.post(
-    path="/question/{id}/submission",
-    response_class=RedirectResponse,
-    tags=["submission"],
-)
-async def question_create_submission(
-    session: SessionDep,
-    auth: AuthDep,
-    id: int,
-    submission_in: Annotated[SubmissionCreate, Form()],
-):
-    """Create a new submission."""
-    question = session.get(Question, id)
-
-    if question is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="question not found"
-        )
-
-    submission = Submission(
-        answer=validate_question_answer(submission_in.answer),
-        team_id=auth.id,
-        question_id=question.id,
-    )
-
-    session.add(submission)
-    session.commit()
-
-    return RedirectResponse(f"/question/{id}", status_code=302)
-
-
-@router.post(
-    path="/question/{question_id}/submission/{submission_id}/delete",
-    response_class=RedirectResponse,
-    tags=["submission", "admin"],
-)
-async def question_delete_submission(
-    session: SessionDep, auth: AdminDep, question_id: int, submission_id: int
-):
-    """Deletes A submission."""
-    question = session.get(Question, question_id)
-
-    if question is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="question not found"
-        )
-
-    submission = session.get(Submission, submission_id)
-
-    if submission is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="submission not found"
-        )
-
-    session.delete(submission)
-    session.commit()
-    return RedirectResponse("/admin", status_code=302)
-
-
-@router.get(
-    path="/login",
-    response_class=HTMLResponse,
-    tags=["auth"],
-)
-async def login_page(request: Request):
-    """Render the login page."""
-    return templates.TemplateResponse(request=request, name="pages/login.html")
-
-
-@router.post(
-    path="/login",
-    tags=["auth"],
-)
-async def login(
-    session: SessionDep, name: Annotated[str, Form()], password: Annotated[str, Form()]
-):
-    """Log in and create a JWT."""
-    team = session.exec(
-        select(Team).where(Team.name == name, Team.password == password)
-    ).first()
-    if team is None:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Invalid credentials"
-        )
-    team_jwt = jwt.encode(
-        payload={
-            "id": team.id,
-            "exp": datetime.now(tz=timezone.utc).timestamp()
-            + settings.JWT_EXPIRE_MINUTES * 60,
-        },
-        key=settings.JWT_SECRET_KEY,
-        algorithm=settings.JWT_ALGORITHM,
-    )
-    response = RedirectResponse("/", status_code=302)
-    response.set_cookie(key="auth_jwt", value=team_jwt)
-    return response
-
-
-@router.get(
-    path="/leaderboard",
-    response_class=HTMLResponse,
-    tags=["leaderboard"],
-)
-async def leaderboard_page(
-    session: SessionDep, request: Request, auth: AuthOptionalDep
-):
-    """Render the leaderboard page."""
-    template_teams = []
-    teams = session.exec(select(Team)).all()
-    for team in teams:
-        quality = get_team_quality(session, team)
-        logo = generate_logo(quality)
-        template_teams.append({"name": team.name, "img": encoded_logo(logo)})
-    return templates.TemplateResponse(
-        request=request,
-        name="pages/leaderboard.html",
-        context={"teams": template_teams, "team": auth},
-    )
-
-
-# TODO: Optimize function
-@router.get(
-    path="/admin",
-    response_class=HTMLResponse,
-    tags=["admin"],
-)
-async def admin_page(request: Request, session: SessionDep, auth: AdminDep):
-    """Return admin overview page."""
-    questions = session.exec(select(Question).order_by(text("Question.number"))).all()
-    submissions = session.exec(
-        select(Submission).order_by(desc(text("Submission.timestamp")))
-    ).all()
-    teams = session.exec(select(Team).order_by(text("Team.name"))).all()
-
-    # Team submissions table
-
-    @dataclass
-    class QuestionAnswer:
-        question: Question
-        submissions: int
-        correct: bool | None
-
-    @dataclass
-    class TeamAnswer:
-        team: Team
-        questions: list[QuestionAnswer]
-
-    team_answers: list[TeamAnswer] = []
-
-    for team in teams:
-        team_answer = TeamAnswer(team, [])
-
-        for question in questions:
-            question_submissions = [
-                s
-                for s in submissions
-                if s.team_id == team.id and s.question_id == question.id
-            ]
-            correct_submission = next(
-                (
-                    s
-                    for s in question_submissions
-                    if is_answer_correct(s.answer, question.solution)
-                ),
-                None,
-            )
-            team_answer.questions.append(
-                QuestionAnswer(
-                    question,
-                    len(question_submissions),
-                    True
-                    if correct_submission
-                    else None
-                    if len(question_submissions) == 0
-                    else False,
-                )
-            )
-
-        team_answers.append(team_answer)
-
-    # Scoreboard
-
-    @dataclass
-    class TeamScore:
-        team: Team
-        score: float
-
-    team_scores: list[TeamScore] = []
-
-    for team in teams:
-        team_scores.append(TeamScore(team, get_team_score(session, team, questions)))
-
-    team_scores = sorted(team_scores, key=lambda x: -x.score)
-
-    # All submissions table
-
-    @dataclass
-    class SubmissionPopulated:
-        submission: Submission
-        team: Team
-        question: Question
-        timestamp: str
-
-    submissions_populated: list[SubmissionPopulated] = []
-
-    for s in submissions:
-        team = next((t for t in teams if t.id == s.team_id), None)
-        if not team:
-            continue  # Shouldn't happen
-
-        question = next((q for q in questions if q.id == s.question_id), None)
-        if not question:
-            continue  # Shouldn't happen
-
-        submissions_populated.append(
-            SubmissionPopulated(
-                s, team, question, s.timestamp.strftime("%d-%m-%Y %H:%M:%S")
-            )
-        )
-
-    return templates.TemplateResponse(
-        request=request,
-        name="pages/admin.html",
-        context={
-            "team": auth,
-            "answers": team_answers,
-            "questions": questions,
-            "scores": team_scores,
-            "submissions": submissions_populated,
-        },
-    )
-
-
-@router.get(
     path="/admin/teams.csv",
     tags=["admin", "export"],
 )
@@ -695,24 +716,3 @@ async def admin_answers_csv(request: Request, session: SessionDep, auth: AdminDe
         )
 
     return Response(content=output.getvalue(), media_type="text/csv")
-
-
-@router.get(
-    path="/questions-pdf",
-    tags=["export"],
-)
-async def questions_pdf(session: SessionDep):
-    """Return a printable pdf file with all questions."""
-    sorted_visible_questions = session.exec(
-        select(Question).where(Question.visible).order_by(Question.number)
-    ).all()
-    html_template = templates.get_template("questions_pdf.html")
-    html = html_template.render(
-        sorted_visible_questions=sorted_visible_questions,
-        render_md_to_html=render_md_to_html,
-    )
-    pdf = render_html_to_pdf(html)
-    return Response(
-        content=pdf,
-        media_type="application/pdf",
-    )
