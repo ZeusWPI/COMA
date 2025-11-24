@@ -95,7 +95,7 @@ async def home_page(request: Request, session: SessionDep, auth: AuthDep):
 
     return templates.TemplateResponse(
         request=request,
-        name="home.html",
+        name="pages/home.html",
         context={
             "team": auth,
             "questions": team_questions,
@@ -108,7 +108,9 @@ async def team_admin_page(request: Request, auth: AdminDep, session: SessionDep)
     teams = session.exec(select(Team)).all()
 
     return templates.TemplateResponse(
-        request=request, name="team_admin.html", context={"team": auth, "teams": teams}
+        request=request,
+        name="pages/team_admin.html",
+        context={"team": auth, "teams": teams},
     )
 
 
@@ -118,7 +120,7 @@ async def new_team(request: Request, auth: AdminDep):
     Return page for new team creation
     """
     return templates.TemplateResponse(
-        request=request, name="team_new.html", context={"team": auth}
+        request=request, name="pages/team_new.html", context={"team": auth}
     )
 
 
@@ -161,7 +163,9 @@ async def show_team(request: Request, session: SessionDep, id: int, auth: AdminD
         )
 
     return templates.TemplateResponse(
-        request=request, name="team_show.html", context={"created": team, "team": auth}
+        request=request,
+        name="pages/team_show.html",
+        context={"created": team, "team": auth},
     )
 
 
@@ -190,7 +194,7 @@ async def admin_question_page(request: Request, auth: AdminDep, session: Session
 
     return templates.TemplateResponse(
         request=request,
-        name="question_admin.html",
+        name="pages/question_admin.html",
         context={"team": auth, "questions": questions},
     )
 
@@ -203,7 +207,7 @@ async def new_question(request: Request, auth: AdminDep):
     Render the question creation page
     """
     return templates.TemplateResponse(
-        request=request, name="question_form.html", context={"team": auth}
+        request=request, name="pages/question_form.html", context={"team": auth}
     )
 
 
@@ -227,7 +231,7 @@ async def update_question_page(
 
     return templates.TemplateResponse(
         request=request,
-        name="question_form.html",
+        name="pages/question_form.html",
         context={"question": question_public, "team": auth},
     )
 
@@ -372,7 +376,7 @@ async def show_question(id: int, session: SessionDep, auth: AuthDep, request: Re
 
     return templates.TemplateResponse(
         request=request,
-        name="question_show.html",
+        name="pages/question_show.html",
         context={
             "team": auth,
             "question": question,
@@ -448,7 +452,7 @@ async def login_page(request: Request):
     """
     Render the login page
     """
-    return templates.TemplateResponse(request=request, name="login.html")
+    return templates.TemplateResponse(request=request, name="pages/login.html")
 
 
 @router.post("/login", tags=["auth"])
@@ -494,7 +498,7 @@ async def leaderboard_page(
         template_teams.append({"name": team.name, "img": encoded_logo(logo)})
     return templates.TemplateResponse(
         request=request,
-        name="leaderboard.html",
+        name="pages/leaderboard.html",
         context={"teams": template_teams, "team": auth},
     )
 
@@ -596,7 +600,7 @@ async def admin_page(request: Request, session: SessionDep, auth: AdminDep):
 
     return templates.TemplateResponse(
         request=request,
-        name="admin.html",
+        name="pages/admin.html",
         context={
             "team": auth,
             "answers": team_answers,
