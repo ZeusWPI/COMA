@@ -13,3 +13,9 @@ nav a.nav-brand img {
   max-height: 48px;
   width: auto;
 }
+
+*:has(> nav) {
+  position: sticky;
+  top: 0px;
+  z-index: 20;
+}
