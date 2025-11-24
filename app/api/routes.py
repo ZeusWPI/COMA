@@ -104,7 +104,7 @@ async def home_page(request: Request, session: SessionDep, auth: AuthDep):
 
 
 @router.get("/admin/team", response_class=HTMLResponse, tags=["admin", "team"])
-async def team_admin_page(request: Request, auth: AdminDep, session: SessionDep):
+async def admin_team_page(request: Request, auth: AdminDep, session: SessionDep):
     teams = session.exec(select(Team)).all()
 
     return templates.TemplateResponse(
@@ -115,7 +115,7 @@ async def team_admin_page(request: Request, auth: AdminDep, session: SessionDep)
 
 
 @router.get("/admin/team/create", response_class=HTMLResponse, tags=["admin", "team"])
-async def new_team(request: Request, auth: AdminDep):
+async def admin_team_create_page(request: Request, auth: AdminDep):
     """
     Return page for new team creation
     """
@@ -127,7 +127,7 @@ async def new_team(request: Request, auth: AdminDep):
 @router.post(
     "/admin/team/create", response_class=RedirectResponse, tags=["admin", "team"]
 )
-async def create_team(
+async def admin_team_create(
     session: SessionDep, team_in: Annotated[TeamCreate, Form()], auth: AdminDep
 ):
     """
@@ -152,7 +152,9 @@ async def create_team(
 
 
 @router.get("/admin/team/{id}", response_class=HTMLResponse, tags=["admin"])
-async def show_team(request: Request, session: SessionDep, id: int, auth: AdminDep):
+async def admin_team_show_page(
+    request: Request, session: SessionDep, id: int, auth: AdminDep
+):
     """
     Return detail page of team, only admins have access
     """
@@ -172,7 +174,9 @@ async def show_team(request: Request, session: SessionDep, id: int, auth: AdminD
 @router.post(
     "/admin/team/{id}/delete", response_class=RedirectResponse, tags=["admin", "team"]
 )
-async def delete_team(request: Request, session: SessionDep, id: int, auth: AdminDep):
+async def admin_team_delete(
+    request: Request, session: SessionDep, id: int, auth: AdminDep
+):
     """
     Delete A team
     """
@@ -202,7 +206,7 @@ async def admin_question_page(request: Request, auth: AdminDep, session: Session
 @router.get(
     "/admin/question/create", response_class=HTMLResponse, tags=["admin", "question"]
 )
-async def new_question(request: Request, auth: AdminDep):
+async def admin_question_create_page(request: Request, auth: AdminDep):
     """
     Render the question creation page
     """
@@ -214,7 +218,7 @@ async def new_question(request: Request, auth: AdminDep):
 @router.get(
     "/admin/question/{id}", response_class=HTMLResponse, tags=["admin", "question"]
 )
-async def update_question_page(
+async def admin_question_show_page(
     session: SessionDep, request: Request, auth: AdminDep, id: int
 ):
     """
@@ -241,7 +245,7 @@ async def update_question_page(
     response_class=RedirectResponse,
     tags=["admin", "question"],
 )
-async def create_question(
+async def admin_question_create(
     session: SessionDep, auth: AdminDep, question_in: Annotated[QuestionCreate, Form()]
 ):
     """
@@ -266,7 +270,7 @@ async def create_question(
 @router.post(
     "/admin/question/{id}", response_class=RedirectResponse, tags=["admin", "question"]
 )
-async def update_question(
+async def admin_question_update(
     session: SessionDep,
     auth: AdminDep,
     id: int,
@@ -301,7 +305,7 @@ async def update_question(
     response_class=RedirectResponse,
     tags=["admin", "question"],
 )
-async def delete_question(session: SessionDep, auth: AdminDep, id: int):
+async def admin_question_delete(session: SessionDep, auth: AdminDep, id: int):
     """
     Remove this question
     """
@@ -323,7 +327,7 @@ async def delete_question(session: SessionDep, auth: AdminDep, id: int):
     response_class=RedirectResponse,
     tags=["admin", "question"],
 )
-async def reset_question(session: SessionDep, auth: AdminDep, id: int):
+async def admin_question_reset(session: SessionDep, auth: AdminDep, id: int):
     """
     Delete all submissions for this question
     """
@@ -341,7 +345,9 @@ async def reset_question(session: SessionDep, auth: AdminDep, id: int):
 
 
 @router.get("/question/{id}", response_class=HTMLResponse, tags=["question"])
-async def show_question(id: int, session: SessionDep, auth: AuthDep, request: Request):
+async def question_show_page(
+    id: int, session: SessionDep, auth: AuthDep, request: Request
+):
     """
     Return the detail page of a question with submission form
     """
@@ -389,7 +395,7 @@ async def show_question(id: int, session: SessionDep, auth: AuthDep, request: Re
 @router.post(
     "/question/{id}/submission", response_class=RedirectResponse, tags=["submission"]
 )
-async def create_submission(
+async def question_create_submission(
     session: SessionDep,
     auth: AuthDep,
     id: int,
@@ -422,7 +428,7 @@ async def create_submission(
     response_class=RedirectResponse,
     tags=["submission", "admin"],
 )
-async def delete_submission(
+async def question_delete_submission(
     session: SessionDep, auth: AdminDep, question_id: int, submission_id: int
 ):
     """
@@ -612,7 +618,7 @@ async def admin_page(request: Request, session: SessionDep, auth: AdminDep):
 
 
 @router.get("/admin/teams.csv", tags=["admin", "export"])
-async def teams_csv(request: Request, session: SessionDep, auth: AdminDep):
+async def admin_teams_csv(request: Request, session: SessionDep, auth: AdminDep):
     """
     Return a CSV with the number of attempts of teams
     """
@@ -639,7 +645,7 @@ async def teams_csv(request: Request, session: SessionDep, auth: AdminDep):
 
 
 @router.get("/admin/answers.csv", tags=["admin", "export"])
-async def answers_csv(request: Request, session: SessionDep, auth: AdminDep):
+async def admin_answers_csv(request: Request, session: SessionDep, auth: AdminDep):
     """
     Return a CSV with all answers
     """
