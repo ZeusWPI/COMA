@@ -109,7 +109,7 @@ async def admin_team_page(request: Request, auth: AdminDep, session: SessionDep)
 
     return templates.TemplateResponse(
         request=request,
-        name="pages/team_admin.html",
+        name="pages/admin_team.html",
         context={"team": auth, "teams": teams},
     )
 
@@ -120,7 +120,7 @@ async def admin_team_create_page(request: Request, auth: AdminDep):
     Return page for new team creation
     """
     return templates.TemplateResponse(
-        request=request, name="pages/team_new.html", context={"team": auth}
+        request=request, name="pages/admin_team_create.html", context={"team": auth}
     )
 
 
@@ -166,7 +166,7 @@ async def admin_team_show_page(
 
     return templates.TemplateResponse(
         request=request,
-        name="pages/team_show.html",
+        name="pages/admin_team_show.html",
         context={"created": team, "team": auth},
     )
 
@@ -198,7 +198,7 @@ async def admin_question_page(request: Request, auth: AdminDep, session: Session
 
     return templates.TemplateResponse(
         request=request,
-        name="pages/question_admin.html",
+        name="pages/admin_question.html",
         context={"team": auth, "questions": questions},
     )
 
@@ -211,7 +211,7 @@ async def admin_question_create_page(request: Request, auth: AdminDep):
     Render the question creation page
     """
     return templates.TemplateResponse(
-        request=request, name="pages/question_form.html", context={"team": auth}
+        request=request, name="pages/admin_question_form.html", context={"team": auth}
     )
 
 
@@ -235,7 +235,7 @@ async def admin_question_show_page(
 
     return templates.TemplateResponse(
         request=request,
-        name="pages/question_form.html",
+        name="pages/admin_question_form.html",
         context={"question": question_public, "team": auth},
     )
 
