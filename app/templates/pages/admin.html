@@ -83,7 +83,7 @@
             {% for s in submissions %}
               <tr>
                 <td>
-                  <form class="confirm" method="POST" action="/question/{{s.question.id}}/submission/{{s.submission.id}}/delete">
+                  <form class="confirm" method="POST" action="/question/{{ s.question.id }}/submission/{{ s.submission.id }}/delete">
                     <button class="delete outline" data-tooltip="Delete" type="submit"/>🗑️</button>
                   </form>
                 </th>

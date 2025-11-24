@@ -32,11 +32,11 @@
             </td>
             <td>
               <div class="grid">
-                <a type="button" href="/admin/question/{{q.id}}" class="outline" data-tooltip="Edit">✏️</a>
-                <form class="confirm" method="POST" action="/admin/question/{{q.id}}/reset">
-                  <button type="submit" href="/admin/question/{{q.id}}/reset" class="outline" data-tooltip="Delete all submissions for this question" >↺</button>
+                <a type="button" href="/admin/question/{{ q.id }}" class="outline" data-tooltip="Edit">✏️</a>
+                <form class="confirm" method="POST" action="/admin/question/{{ q.id }}/reset">
+                  <button type="submit" href="/admin/question/{{ q.id }}/reset" class="outline" data-tooltip="Delete all submissions for this question" >↺</button>
                 </form>
-                <form class="confirm" method="POST" action="/admin/question/{{q.id}}/delete">
+                <form class="confirm" method="POST" action="/admin/question/{{ q.id }}/delete">
                   <button type="submit" class="delete outline" data-tooltip="Delete">🗑️</button>
                 </form>
               </div>

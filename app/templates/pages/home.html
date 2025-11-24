@@ -3,7 +3,7 @@
 {% block content %}
   <div class="home-root">
     <div class="home-layout">
-      <h1>Team: {{team.name }} </h1>
+      <h1>Team: {{ team.name }} </h1>
 
 
       <table class="home-questions-table">
@@ -18,7 +18,7 @@
 
         <tbody>
           {% for q in questions %}
-            <tr onclick="window.location='/question/{{q.question.id}}'">
+            <tr onclick="window.location='/question/{{ q.question.id }}'">
               <td>{{ q.question.number }}</td>
               <td>{{ render_md_to_html(q.question.title, inline=True)|safe }}</td>
               <td><img class="home-logo" src="data:image/png;base64,{{ q.logo }}" /></td>

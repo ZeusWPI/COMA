@@ -76,14 +76,14 @@ p:has(span.math.display) {
     {% for q in sorted_visible_questions %}
       <h2 class="hsplit">
         <span>
-          {{q.number}}.
-          {{render_md_to_html(q.title, inline=True)|safe}}
+          {{ q.number }}.
+          {{ render_md_to_html(q.title, inline=True)|safe }}
         </span>
         <span>
-          ({{render_md_to_html("$" ~ q.max_score_display ~ "$", inline=True)|safe}} punten)
+          ({{ render_md_to_html("$" ~ q.max_score_display ~ "$", inline=True)|safe }} punten)
         </span>
       </h2>
-      {{render_md_to_html(q.body)|safe}}
+      {{ render_md_to_html(q.body)|safe }}
     {% endfor %}
   </body>
 </html>

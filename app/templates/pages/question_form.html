@@ -10,7 +10,7 @@
         placeholder="Title"
         required
         {% if question %}
-          value="{{question.title}}"
+          value="{{ question.title }}"
         {% endif %}
       />
     </label>
@@ -21,7 +21,7 @@
         name="body"
         placeholder="Write the question here...."
         required
-      />{% if question %}{{question.body}}{% endif %}</textarea>
+      />{% if question %}{{ question.body }}{% endif %}</textarea>
     </label>
 
     <label>
@@ -33,7 +33,7 @@
         aria-label="Number"
         required
         {% if question %}
-          value="{{question.number}}"
+          value="{{ question.number }}"
         {% endif %}
       />
     </label>
@@ -47,7 +47,7 @@
         aria-describedby="max-score-helper"
         required
         {% if question %}
-          value="{{question.max_score_display}}"
+          value="{{ question.max_score_display }}"
         {% endif %}
        />
       <small id="max-score-helper">
@@ -64,7 +64,7 @@
         placeholder="Max score"
         required
         {% if question %}
-          value="{{question.max_score}}"
+          value="{{ question.max_score }}"
         {% endif %}
       />
     </label>
@@ -77,7 +77,7 @@
         placeholder="solution..."
         required
         {% if question %}
-          value="{{question.solution}}"
+          value="{{ question.solution }}"
         {% endif %}
       />
     </label>
