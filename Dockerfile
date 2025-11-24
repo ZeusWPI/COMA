@@ -45,4 +45,4 @@ COPY ./ ./
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --locked --no-dev
 
-CMD ["fastapi", "run", "--host=0.0.0.0", "--port=80", "app/main.py"]
+CMD ["fastapi", "run", "--host=0.0.0.0", "--port=80", "--workers=4", "app/main.py"]
