@@ -33,7 +33,6 @@ from app.api.utils import (
     get_team_quality,
     get_team_score,
     is_answer_correct,
-    question_score_left,
     validate_question_answer,
 )
 from app.core.config import settings
@@ -143,15 +142,11 @@ async def home_page(request: Request, session: SessionDep, auth: AuthDep):
             )
         )
 
-        if solved:
-            quality = (
-                get_question_score(auth, question, question_submissions)
-                / question.max_score
-            )
-        else:
-            quality = (
-                question_score_left(question, question_submissions) / question.max_score
-            )
+        quality = (
+            get_question_score(auth, question, question_submissions)
+            / question.max_score
+        )
+
         logo = generate_logo(quality, (19, 23, 31))
 
         team_questions.append(
