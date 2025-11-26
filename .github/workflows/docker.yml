@@ -23,7 +23,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build the new image
-        run: docker build . -t ghcr.io/zeuswpi/coma:${{ github.sha }}
+        run: docker build --target prod . -t ghcr.io/zeuswpi/coma:${{ github.sha }}
       - name: Tag the new image with latest
         run: docker tag ghcr.io/zeuswpi/coma:${{ github.sha }} ghcr.io/zeuswpi/coma:latest
       - name: Push Docker image
