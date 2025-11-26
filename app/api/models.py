@@ -41,6 +41,8 @@ class QuestionBase(SQLModel):
     max_score_display: str
     number: int = Field(unique=True)
     visible: bool = Field(default=False)
+    # number of decimals after the point that need to match the solution.
+    accuracy: int = Field(default=10)
 
 
 # Shared properties

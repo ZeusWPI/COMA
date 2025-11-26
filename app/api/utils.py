@@ -22,7 +22,7 @@ def get_question_score(
 ) -> float:
     for submission in question_submissions:
         assert submission.question_id == question.id
-        if is_answer_correct(submission.answer, question.solution):
+        if is_answer_correct(submission.answer, question.solution, question.accuracy):
             return 0.9 ** (len(question_submissions) - 1) * question.max_score
 
     return 0.0
@@ -78,14 +78,14 @@ def encoded_logo(logo: Image.Image) -> str:
     return base64.b64encode(bytes.getvalue()).decode()
 
 
-def is_answer_correct(a: str, b: str) -> bool:
+def is_answer_correct(a: str, b: str, accuracy: int = 10) -> bool:
     if "." not in a and a == b:
         return True
     if a.count(".") == 1 and b.count(".") == 1:
         split_a = a.split(".")
         split_b = b.split(".")
-        after_decimal_a = textwrap.wrap(split_a[1], 10)[0]
-        after_decimal_b = textwrap.wrap(split_b[1], 10)[0]
+        after_decimal_a = textwrap.wrap(split_a[1], accuracy)[0]
+        after_decimal_b = textwrap.wrap(split_b[1], accuracy)[0]
         if split_a[0] == split_b[0] and after_decimal_a == after_decimal_b:
             return True
     return False

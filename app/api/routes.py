@@ -138,7 +138,7 @@ async def home_page(request: Request, session: SessionDep, auth: AuthDep):
                 (
                     s
                     for s in question_submissions
-                    if is_answer_correct(s.answer, question.solution)
+                    if is_answer_correct(s.answer, question.solution, question.accuracy)
                 ),
                 None,
             )
@@ -203,7 +203,9 @@ async def question_show_page(
     submissions = list(
         map(
             lambda s: SubmissionCorrect(
-                s.timestamp, s.answer, is_answer_correct(s.answer, question.solution)
+                s.timestamp,
+                s.answer,
+                is_answer_correct(s.answer, question.solution, question.accuracy),
             ),
             submissions,
         )
@@ -356,7 +358,7 @@ async def admin_page(request: Request, session: SessionDep, auth: AdminDep):
                 (
                     s
                     for s in question_submissions
-                    if is_answer_correct(s.answer, question.solution)
+                    if is_answer_correct(s.answer, question.solution, question.accuracy)
                 ),
                 None,
             )
@@ -754,7 +756,7 @@ async def admin_answers_csv(request: Request, session: SessionDep, auth: AdminDe
                 team_name,
                 question_no,
                 i.answer,
-                is_answer_correct(question.solution, i.answer),
+                is_answer_correct(question.solution, i.answer, question.accuracy),
             ]
         )
 

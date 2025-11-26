@@ -85,6 +85,24 @@
     </label>
 
     <label>
+      Accuracy
+      <input
+        type="number"
+        name="accuracy"
+        aria-describedby="accuracy-helper"
+        required
+        {% if question %}
+          value="{{ question.accuracy }}"
+        {% else %}
+          value="10"
+        {% endif %}
+      />
+      <small id="accuracy-helper">
+        Number of decimals after the point where submissions need to exactly match the given solution.
+      </small>
+    </label>
+
+    <label>
       Visible
       <input
         name="visible"
