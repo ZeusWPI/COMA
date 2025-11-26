@@ -115,7 +115,9 @@ async def login(
 )
 async def home_page(request: Request, session: SessionDep, auth: AuthDep):
     """Return home page with questions."""
-    questions = session.exec(select(Question).order_by(text("Question.number"))).all()
+    questions = session.exec(
+        select(Question).where(Question.visible).order_by(text("Question.number"))
+    ).all()
     submissions = session.exec(
         select(Submission).where(Submission.team_id == auth.id)
     ).all()
